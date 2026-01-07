@@ -1,0 +1,1889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ELARA Enterprises - Business Management System</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .sidebar {
+            transition: transform 0.3s ease;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar.hidden {
+                transform: translateX(-100%);
+            }
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #7C3AED 0%, #8B5CF6 100%);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(124, 58, 237, 0.3);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #14B8A6 0%, #2DD4BF 100%);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(20, 184, 166, 0.3);
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, rgba(124, 58, 237, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+            border-left: 4px solid #7C3AED;
+        }
+        
+        .input-field {
+            border: 2px solid #E5E7EB;
+            border-radius: 8px;
+            padding: 10px 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .input-field:focus {
+            outline: none;
+            border-color: #7C3AED;
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+        }
+        
+        .nav-item {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .nav-item:hover {
+            background: rgba(124, 58, 237, 0.1);
+        }
+        
+        .nav-item.active {
+            background: linear-gradient(135deg, #7C3AED 0%, #8B5CF6 100%);
+            color: white;
+        }
+        
+        .table-row:hover {
+            background: rgba(124, 58, 237, 0.02);
+        }
+        
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            body {
+                margin: 0;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    
+    <!-- Mobile Menu Toggle -->
+    <button id="menuToggle" class="no-print fixed top-4 left-4 z-50 md:hidden bg-purple-600 text-white p-3 rounded-lg shadow-lg">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <!-- Sidebar -->
+    <aside id="sidebar" class="sidebar fixed left-0 top-0 h-full w-64 bg-white shadow-xl z-40 overflow-y-auto">
+        <div class="p-6 border-b border-gray-200">
+            <h1 class="text-2xl font-bold text-purple-600" id="businessNameDisplay">ELARA Enterprises</h1>
+            <p class="text-sm text-gray-500">Business Management</p>
+        </div>
+        
+        <nav class="p-4">
+            <div class="nav-item active p-3 rounded-lg mb-2" data-tab="dashboard">
+                <i class="fas fa-chart-line w-5 mr-3"></i>
+                <span>Dashboard</span>
+            </div>
+            <div class="nav-item p-3 rounded-lg mb-2" data-tab="raw-materials">
+                <i class="fas fa-boxes w-5 mr-3"></i>
+                <span>Raw Materials</span>
+            </div>
+            <div class="nav-item p-3 rounded-lg mb-2" data-tab="finished-goods">
+                <i class="fas fa-box-open w-5 mr-3"></i>
+                <span>Finished Goods</span>
+            </div>
+            <div class="nav-item p-3 rounded-lg mb-2" data-tab="repackage">
+                <i class="fas fa-recycle w-5 mr-3"></i>
+                <span>Repackage</span>
+            </div>
+            <div class="nav-item p-3 rounded-lg mb-2" data-tab="profit-calculator">
+                <i class="fas fa-calculator w-5 mr-3"></i>
+                <span>Profit Calculator</span>
+            </div>
+            <div class="nav-item p-3 rounded-lg mb-2" data-tab="billing">
+                <i class="fas fa-file-invoice-dollar w-5 mr-3"></i>
+                <span>Billing & Sales</span>
+            </div>
+            <div class="nav-item p-3 rounded-lg mb-2" data-tab="customers">
+                <i class="fas fa-users w-5 mr-3"></i>
+                <span>Customers</span>
+            </div>
+            <div class="nav-item p-3 rounded-lg mb-2" data-tab="reports">
+                <i class="fas fa-chart-bar w-5 mr-3"></i>
+                <span>Reports</span>
+            </div>
+            <div class="nav-item p-3 rounded-lg mb-2" data-tab="settings">
+                <i class="fas fa-cog w-5 mr-3"></i>
+                <span>Settings</span>
+            </div>
+        </nav>
+    </aside>
+    
+    <!-- Main Content -->
+    <main class="ml-0 md:ml-64 p-4 md:p-8">
+        
+        <!-- Dashboard Tab -->
+        <div id="dashboard" class="tab-content active">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-3xl font-bold text-gray-800">Dashboard</h2>
+                <div class="space-x-2">
+                    <button onclick="showTab('billing')" class="btn-primary text-white px-4 py-2 rounded-lg">
+                        <i class="fas fa-plus mr-2"></i>New Sale
+                    </button>
+                    <button onclick="showTab('raw-materials')" class="btn-secondary text-white px-4 py-2 rounded-lg">
+                        <i class="fas fa-box mr-2"></i>Add Stock
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="card stat-card p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500 text-sm font-medium">Total Revenue</p>
+                            <h3 class="text-3xl font-bold text-purple-600 mt-2" id="totalRevenue">₹0</h3>
+                        </div>
+                        <div class="bg-purple-100 p-3 rounded-full">
+                            <i class="fas fa-rupee-sign text-purple-600 text-2xl"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card p-6" style="background: linear-gradient(135deg, rgba(20, 184, 166, 0.05) 0%, rgba(45, 212, 191, 0.05) 100%); border-left: 4px solid #14B8A6;">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500 text-sm font-medium">Total Profit</p>
+                            <h3 class="text-3xl font-bold text-teal-600 mt-2" id="totalProfit">₹0</h3>
+                        </div>
+                        <div class="bg-teal-100 p-3 rounded-full">
+                            <i class="fas fa-chart-line text-teal-600 text-2xl"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card p-6" style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.05) 0%, rgba(248, 113, 113, 0.05) 100%); border-left: 4px solid #EF4444;">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500 text-sm font-medium">Low Stock Alerts</p>
+                            <h3 class="text-3xl font-bold text-red-600 mt-2" id="lowStockCount">0</h3>
+                        </div>
+                        <div class="bg-red-100 p-3 rounded-full">
+                            <i class="fas fa-exclamation-triangle text-red-600 text-2xl"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card p-6" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(96, 165, 250, 0.05) 100%); border-left: 4px solid #3B82F6;">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500 text-sm font-medium">Active Products</p>
+                            <h3 class="text-3xl font-bold text-blue-600 mt-2" id="activeProducts">0</h3>
+                        </div>
+                        <div class="bg-blue-100 p-3 rounded-full">
+                            <i class="fas fa-box-open text-blue-600 text-2xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Activity -->
+            <div class="card p-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">Recent Sales</h3>
+                <div id="recentSales" class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b border-gray-200">
+                                <th class="text-left p-3 text-gray-600 font-semibold">Date</th>
+                                <th class="text-left p-3 text-gray-600 font-semibold">Customer</th>
+                                <th class="text-left p-3 text-gray-600 font-semibold">Items</th>
+                                <th class="text-right p-3 text-gray-600 font-semibold">Total</th>
+                                <th class="text-right p-3 text-gray-600 font-semibold">Profit</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recentSalesBody">
+                            <tr>
+                                <td colspan="5" class="text-center p-8 text-gray-400">No sales yet</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Raw Materials Tab -->
+        <div id="raw-materials" class="tab-content">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-3xl font-bold text-gray-800">Raw Materials Inventory</h2>
+                <button onclick="showAddRawMaterialModal()" class="btn-primary text-white px-4 py-2 rounded-lg">
+                    <i class="fas fa-plus mr-2"></i>Add Raw Material
+                </button>
+            </div>
+            
+            <div class="card p-6">
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b border-gray-200">
+                                <th class="text-left p-3 text-gray-600 font-semibold">Material Name</th>
+                                <th class="text-right p-3 text-gray-600 font-semibold">Quantity (kg)</th>
+                                <th class="text-right p-3 text-gray-600 font-semibold">Cost/kg</th>
+                                <th class="text-right p-3 text-gray-600 font-semibold">Total Value</th>
+                                <th class="text-center p-3 text-gray-600 font-semibold">Min Stock</th>
+                                <th class="text-center p-3 text-gray-600 font-semibold">Status</th>
+                                <th class="text-center p-3 text-gray-600 font-semibold">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rawMaterialsTable">
+                            <tr>
+                                <td colspan="7" class="text-center p-8 text-gray-400">No raw materials added</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Finished Goods Tab -->
+        <div id="finished-goods" class="tab-content">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-3xl font-bold text-gray-800">Finished Goods Inventory</h2>
+                <button onclick="showAddFinishedGoodModal()" class="btn-primary text-white px-4 py-2 rounded-lg">
+                    <i class="fas fa-plus mr-2"></i>Add Finished Good
+                </button>
+            </div>
+            
+            <div class="card p-6">
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b border-gray-200">
+                                <th class="text-left p-3 text-gray-600 font-semibold">Product Name</th>
+                                <th class="text-right p-3 text-gray-600 font-semibold">Quantity</th>
+                                <th class="text-right p-3 text-gray-600 font-semibold">Cost Price</th>
+                                <th class="text-right p-3 text-gray-600 font-semibold">Selling Price</th>
+                                <th class="text-right p-3 text-gray-600 font-semibold">Profit/Unit</th>
+                                <th class="text-center p-3 text-gray-600 font-semibold">Min Stock</th>
+                                <th class="text-center p-3 text-gray-600 font-semibold">Status</th>
+                                <th class="text-center p-3 text-gray-600 font-semibold">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="finishedGoodsTable">
+                            <tr>
+                                <td colspan="8" class="text-center p-8 text-gray-400">No finished goods added</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Repackage Tab -->
+        <div id="repackage" class="tab-content">
+            <h2 class="text-3xl font-bold text-gray-800 mb-6">Repackage Raw Materials</h2>
+            
+            <div class="card p-6 max-w-2xl">
+                <form id="repackageForm" class="space-y-4">
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">Select Raw Material</label>
+                        <select id="repackageRawMaterial" class="input-field w-full" required>
+                            <option value="">-- Select Material --</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">Quantity to Use (kg)</label>
+                        <input type="number" id="repackageQuantity" class="input-field w-full" min="0.001" step="0.001" required>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">Select Finished Product</label>
+                        <select id="repackageFinishedGood" class="input-field w-full" required>
+                            <option value="">-- Select Product --</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">Number of Units to Produce</label>
+                        <input type="number" id="repackageUnits" class="input-field w-full" min="1" required>
+                    </div>
+                    
+                    <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                        <h4 class="font-semibold text-purple-800 mb-2">Repackage Summary</h4>
+                        <p class="text-sm text-gray-600" id="repackageSummary">Fill in the details to see summary</p>
+                    </div>
+                    
+                    <button type="submit" class="btn-primary text-white px-6 py-3 rounded-lg w-full">
+                        <i class="fas fa-recycle mr-2"></i>Complete Repackage
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Profit Calculator Tab -->
+        <div id="profit-calculator" class="tab-content">
+            <h2 class="text-3xl font-bold text-gray-800 mb-6">Advanced Profit Calculator</h2>
+            
+            <div class="card p-6 max-w-3xl">
+                <form id="profitCalculatorForm" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Raw Material Cost (<span id="currencySymbol1">₹</span>)</label>
+                            <input type="number" id="calcRawCost" class="input-field w-full" min="0" step="0.01" value="0">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Packaging Cost (<span id="currencySymbol2">₹</span>)</label>
+                            <input type="number" id="calcPackagingCost" class="input-field w-full" min="0" step="0.01" value="0">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Labour Cost (<span id="currencySymbol3">₹</span>)</label>
+                            <input type="number" id="calcLabourCost" class="input-field w-full" min="0" step="0.01" value="0">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Transport Cost (<span id="currencySymbol4">₹</span>)</label>
+                            <input type="number" id="calcTransportCost" class="input-field w-full" min="0" step="0.01" value="0">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Electricity Cost (<span id="currencySymbol5">₹</span>)</label>
+                            <input type="number" id="calcElectricityCost" class="input-field w-full" min="0" step="0.01" value="0">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Other Costs (<span id="currencySymbol6">₹</span>)</label>
+                            <input type="number" id="calcOtherCost" class="input-field w-full" min="0" step="0.01" value="0">
+                        </div>
+                    </div>
+                    
+                    <div class="border-t border-gray-200 pt-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-gray-700 font-semibold mb-2">Total Cost (<span id="currencySymbol7">₹</span>)</label>
+                                <input type="text" id="calcTotalCost" class="input-field w-full bg-gray-100" readonly value="0.00">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-gray-700 font-semibold mb-2">Selling Price (<span id="currencySymbol8">₹</span>)</label>
+                                <input type="number" id="calcSellingPrice" class="input-field w-full" min="0" step="0.01" value="0">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button type="button" onclick="calculateProfit()" class="btn-primary text-white px-6 py-3 rounded-lg w-full">
+                        <i class="fas fa-calculator mr-2"></i>Calculate Profit
+                    </button>
+                </form>
+                
+                <div id="profitResults" class="mt-6 hidden">
+                    <div class="bg-gradient-to-r from-purple-50 to-teal-50 border border-purple-200 rounded-lg p-6">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4">Profit Analysis</h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="bg-white p-4 rounded-lg">
+                                <p class="text-sm text-gray-600 mb-1">Net Profit</p>
+                                <h4 class="text-2xl font-bold" id="netProfit">₹0.00</h4>
+                            </div>
+                            
+                            <div class="bg-white p-4 rounded-lg">
+                                <p class="text-sm text-gray-600 mb-1">Profit Margin</p>
+                                <h4 class="text-2xl font-bold text-teal-600" id="profitMargin">0%</h4>
+                            </div>
+                            
+                            <div class="bg-white p-4 rounded-lg">
+                                <p class="text-sm text-gray-600 mb-1">Break-even Price</p>
+                                <h4 class="text-2xl font-bold text-purple-600" id="breakEvenPrice">₹0.00</h4>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 p-4 bg-white rounded-lg">
+                            <p class="text-sm text-gray-600 mb-2">Cost Breakdown</p>
+                            <div id="costBreakdown" class="space-y-2"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Billing & Sales Tab -->
+        <div id="billing" class="tab-content">
+            <h2 class="text-3xl font-bold text-gray-800 mb-6">Create New Sale</h2>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Billing Form -->
+                <div class="lg:col-span-2 card p-6">
+                    <form id="billingForm">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-gray-700 font-semibold mb-2">Select Customer</label>
+                                <div class="flex gap-2">
+                                    <select id="billingCustomer" class="input-field flex-1" required>
+                                        <option value="">-- Walk-in Customer --</option>
+                                    </select>
+                                    <button type="button" onclick="showAddCustomerModal()" class="btn-secondary text-white px-4 py-2 rounded-lg">
+                                        <i class="fas fa-user-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-gray-700 font-semibold mb-2">Select Product</label>
+                                <select id="billingProduct" class="input-field w-full">
+                                    <option value="">-- Select Product --</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-gray-700 font-semibold mb-2">Quantity</label>
+                                <input type="number" id="billingQuantity" class="input-field w-full" min="1" value="1">
+                            </div>
+                            
+                            <button type="button" onclick="addToCart()" class="btn-secondary text-white px-6 py-3 rounded-lg w-full">
+                                <i class="fas fa-cart-plus mr-2"></i>Add to Cart
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <!-- Cart Items -->
+                    <div class="mt-6">
+                        <h3 class="text-lg font-bold text-gray-800 mb-3">Cart Items</h3>
+                        <div id="cartItems" class="space-y-2">
+                            <p class="text-gray-400 text-center py-4">No items in cart</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Invoice Summary -->
+                <div class="card p-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">Invoice Summary</h3>
+                    
+                    <div class="space-y-3">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Subtotal:</span>
+                            <span class="font-semibold" id="cartSubtotal">₹0.00</span>
+                        </div>
+                        
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Items:</span>
+                            <span class="font-semibold" id="cartItemCount">0</span>
+                        </div>
+                        
+                        <div class="border-t border-gray-200 pt-3">
+                            <div class="flex justify-between text-lg">
+                                <span class="font-bold text-gray-800">Total:</span>
+                                <span class="font-bold text-purple-600" id="cartTotal">₹0.00</span>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-teal-50 p-3 rounded-lg">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Est. Profit:</span>
+                                <span class="font-semibold text-teal-600" id="cartProfit">₹0.00</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button onclick="completeSale()" class="btn-primary text-white px-6 py-3 rounded-lg w-full mt-6">
+                        <i class="fas fa-check-circle mr-2"></i>Complete Sale
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Customers Tab -->
+        <div id="customers" class="tab-content">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-3xl font-bold text-gray-800">Customer Management</h2>
+                <button onclick="showAddCustomerModal()" class="btn-primary text-white px-4 py-2 rounded-lg">
+                    <i class="fas fa-user-plus mr-2"></i>Add Customer
+                </button>
+            </div>
+            
+            <div class="card p-6">
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b border-gray-200">
+                                <th class="text-left p-3 text-gray-600 font-semibold">Name</th>
+                                <th class="text-left p-3 text-gray-600 font-semibold">Phone</th>
+                                <th class="text-left p-3 text-gray-600 font-semibold">Email</th>
+                                <th class="text-left p-3 text-gray-600 font-semibold">Address</th>
+                                <th class="text-center p-3 text-gray-600 font-semibold">Total Purchases</th>
+                                <th class="text-center p-3 text-gray-600 font-semibold">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="customersTable">
+                            <tr>
+                                <td colspan="6" class="text-center p-8 text-gray-400">No customers added</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Reports Tab -->
+        <div id="reports" class="tab-content">
+            <h2 class="text-3xl font-bold text-gray-800 mb-6">Sales Reports</h2>
+            
+            <!-- Filter Options -->
+            <div class="card p-6 mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">From Date</label>
+                        <input type="date" id="reportFromDate" class="input-field w-full">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">To Date</label>
+                        <input type="date" id="reportToDate" class="input-field w-full">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">Customer</label>
+                        <select id="reportCustomer" class="input-field w-full">
+                            <option value="">All Customers</option>
+                        </select>
+                    </div>
+                    
+                    <div class="flex items-end">
+                        <button onclick="filterReports()" class="btn-primary text-white px-6 py-3 rounded-lg w-full">
+                            <i class="fas fa-filter mr-2"></i>Filter
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Export Options -->
+            <div class="mb-6 flex gap-3">
+                <button onclick="exportToCSV()" class="btn-secondary text-white px-4 py-2 rounded-lg">
+                    <i class="fas fa-file-csv mr-2"></i>Export to CSV
+                </button>
+                <button onclick="exportToExcel()" class="btn-secondary text-white px-4 py-2 rounded-lg">
+                    <i class="fas fa-file-excel mr-2"></i>Export to Excel
+                </button>
+            </div>
+            
+            <!-- Report Summary -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div class="card p-6">
+                    <p class="text-gray-500 text-sm font-medium">Period Revenue</p>
+                    <h3 class="text-2xl font-bold text-purple-600 mt-2" id="reportRevenue">₹0</h3>
+                </div>
+                
+                <div class="card p-6">
+                    <p class="text-gray-500 text-sm font-medium">Period Profit</p>
+                    <h3 class="text-2xl font-bold text-teal-600 mt-2" id="reportProfit">₹0</h3>
+                </div>
+                
+                <div class="card p-6">
+                    <p class="text-gray-500 text-sm font-medium">Total Sales</p>
+                    <h3 class="text-2xl font-bold text-blue-600 mt-2" id="reportSalesCount">0</h3>
+                </div>
+            </div>
+            
+            <!-- Sales Table -->
+            <div class="card p-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">Sales Details</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b border-gray-200">
+                                <th class="text-left p-3 text-gray-600 font-semibold">Date</th>
+                                <th class="text-left p-3 text-gray-600 font-semibold">Invoice #</th>
+                                <th class="text-left p-3 text-gray-600 font-semibold">Customer</th>
+                                <th class="text-left p-3 text-gray-600 font-semibold">Items</th>
+                                <th class="text-right p-3 text-gray-600 font-semibold">Total</th>
+                                <th class="text-right p-3 text-gray-600 font-semibold">Profit</th>
+                                <th class="text-center p-3 text-gray-600 font-semibold">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reportsTable">
+                            <tr>
+                                <td colspan="7" class="text-center p-8 text-gray-400">No sales data</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Settings Tab -->
+        <div id="settings" class="tab-content">
+            <h2 class="text-3xl font-bold text-gray-800 mb-6">Settings</h2>
+            
+            <div class="card p-6 max-w-2xl">
+                <form id="settingsForm" class="space-y-6">
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">Business Name</label>
+                        <input type="text" id="settingsBusinessName" class="input-field w-full" value="ELARA Enterprises">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">Currency Symbol</label>
+                        <input type="text" id="settingsCurrency" class="input-field w-full" value="₹">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">Business Address</label>
+                        <textarea id="settingsAddress" class="input-field w-full" rows="3"></textarea>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">Contact Number</label>
+                        <input type="tel" id="settingsPhone" class="input-field w-full">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">Email</label>
+                        <input type="email" id="settingsEmail" class="input-field w-full">
+                    </div>
+                    
+                    <button type="submit" class="btn-primary text-white px-6 py-3 rounded-lg">
+                        <i class="fas fa-save mr-2"></i>Save Settings
+                    </button>
+                </form>
+                
+                <div class="mt-8 pt-6 border-t border-gray-200">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">Data Management</h3>
+                    <div class="space-y-3">
+                        <button onclick="exportAllData()" class="btn-secondary text-white px-4 py-2 rounded-lg w-full">
+                            <i class="fas fa-download mr-2"></i>Export All Data
+                        </button>
+                        <button onclick="confirmClearData()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg w-full">
+                            <i class="fas fa-trash mr-2"></i>Clear All Data
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </main>
+    
+    <!-- Modals -->
+    <!-- Add Raw Material Modal -->
+    <div id="addRawMaterialModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 no-print">
+        <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Add Raw Material</h3>
+            <form id="addRawMaterialForm" class="space-y-4">
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">Material Name</label>
+                    <input type="text" id="rawMaterialName" class="input-field w-full" required>
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">Quantity (kg)</label>
+                    <input type="number" id="rawMaterialQuantity" class="input-field w-full" min="0" step="0.001" required>
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">Cost per kg (<span id="currencySymbol9">₹</span>)</label>
+                    <input type="number" id="rawMaterialCost" class="input-field w-full" min="0" step="0.01" required>
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">Minimum Stock Alert (kg)</label>
+                    <input type="number" id="rawMaterialMinStock" class="input-field w-full" min="0" step="0.001" required>
+                </div>
+                <div class="flex gap-3">
+                    <button type="submit" class="btn-primary text-white px-6 py-2 rounded-lg flex-1">Add</button>
+                    <button type="button" onclick="closeModal('addRawMaterialModal')" class="bg-gray-300 text-gray-700 px-6 py-2 rounded-lg">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Add Finished Good Modal -->
+    <div id="addFinishedGoodModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 no-print">
+        <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Add Finished Good</h3>
+            <form id="addFinishedGoodForm" class="space-y-4">
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">Product Name</label>
+                    <input type="text" id="finishedGoodName" class="input-field w-full" required>
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">Quantity (units)</label>
+                    <input type="number" id="finishedGoodQuantity" class="input-field w-full" min="0" required>
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">Unit (e.g., 100g, 500g)</label>
+                    <input type="text" id="finishedGoodUnit" class="input-field w-full" required>
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">Cost Price (<span id="currencySymbol10">₹</span>)</label>
+                    <input type="number" id="finishedGoodCost" class="input-field w-full" min="0" step="0.01" required>
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">Selling Price (<span id="currencySymbol11">₹</span>)</label>
+                    <input type="number" id="finishedGoodPrice" class="input-field w-full" min="0" step="0.01" required>
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">Minimum Stock Alert (units)</label>
+                    <input type="number" id="finishedGoodMinStock" class="input-field w-full" min="0" required>
+                </div>
+                <div class="flex gap-3">
+                    <button type="submit" class="btn-primary text-white px-6 py-2 rounded-lg flex-1">Add</button>
+                    <button type="button" onclick="closeModal('addFinishedGoodModal')" class="bg-gray-300 text-gray-700 px-6 py-2 rounded-lg">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Add Customer Modal -->
+    <div id="addCustomerModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 no-print">
+        <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Add Customer</h3>
+            <form id="addCustomerForm" class="space-y-4">
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">Customer Name</label>
+                    <input type="text" id="customerName" class="input-field w-full" required>
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">Phone</label>
+                    <input type="tel" id="customerPhone" class="input-field w-full" required>
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">Email</label>
+                    <input type="email" id="customerEmail" class="input-field w-full">
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">Address</label>
+                    <textarea id="customerAddress" class="input-field w-full" rows="2"></textarea>
+                </div>
+                <div class="flex gap-3">
+                    <button type="submit" class="btn-primary text-white px-6 py-2 rounded-lg flex-1">Add</button>
+                    <button type="button" onclick="closeModal('addCustomerModal')" class="bg-gray-300 text-gray-700 px-6 py-2 rounded-lg">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Invoice Print Modal -->
+    <div id="invoiceModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-8 max-w-3xl w-full mx-4 max-h-screen overflow-y-auto">
+            <div id="invoiceContent">
+                <!-- Invoice content will be dynamically generated -->
+            </div>
+            <div class="flex gap-3 mt-6 no-print">
+                <button onclick="printInvoice()" class="btn-primary text-white px-6 py-2 rounded-lg flex-1">
+                    <i class="fas fa-print mr-2"></i>Print Invoice
+                </button>
+                <button onclick="closeModal('invoiceModal')" class="bg-gray-300 text-gray-700 px-6 py-2 rounded-lg">Close</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Data Storage
+        let rawMaterials = JSON.parse(localStorage.getItem('rawMaterials')) || [];
+        let finishedGoods = JSON.parse(localStorage.getItem('finishedGoods')) || [];
+        let customers = JSON.parse(localStorage.getItem('customers')) || [];
+        let sales = JSON.parse(localStorage.getItem('sales')) || [];
+        let settings = JSON.parse(localStorage.getItem('settings')) || {
+            businessName: 'ELARA Enterprises',
+            currency: '₹',
+            address: '',
+            phone: '',
+            email: ''
+        };
+        let cart = [];
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+        });
+        
+        function initializeApp() {
+            setupNavigation();
+            setupMobileMenu();
+            loadSettings();
+            updateDashboard();
+            renderRawMaterials();
+            renderFinishedGoods();
+            renderCustomers();
+            renderReports();
+            populateSelects();
+            setupForms();
+            setupProfitCalculator();
+            
+            // Set default dates for reports
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('reportToDate').value = today;
+            const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+            document.getElementById('reportFromDate').value = thirtyDaysAgo;
+        }
+        
+        function setupNavigation() {
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const tab = this.getAttribute('data-tab');
+                    showTab(tab);
+                });
+            });
+        }
+        
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all nav items
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to selected nav item
+            document.querySelector(`.nav-item[data-tab="${tabName}"]`).classList.add('active');
+            
+            // Close mobile menu
+            if (window.innerWidth < 768) {
+                document.getElementById('sidebar').classList.add('hidden');
+            }
+        }
+        
+        function setupMobileMenu() {
+            document.getElementById('menuToggle').addEventListener('click', function() {
+                document.getElementById('sidebar').classList.toggle('hidden');
+            });
+        }
+        
+        function setupForms() {
+            // Raw Material Form
+            document.getElementById('addRawMaterialForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const material = {
+                    id: Date.now(),
+                    name: document.getElementById('rawMaterialName').value,
+                    quantity: parseFloat(document.getElementById('rawMaterialQuantity').value),
+                    unit: 'kg',
+                    costPerUnit: parseFloat(document.getElementById('rawMaterialCost').value),
+                    minStock: parseFloat(document.getElementById('rawMaterialMinStock').value)
+                };
+                rawMaterials.push(material);
+                saveData();
+                renderRawMaterials();
+                updateDashboard();
+                populateSelects();
+                closeModal('addRawMaterialModal');
+                this.reset();
+                showNotification('Raw material added successfully', 'success');
+            });
+            
+            // Finished Good Form
+            document.getElementById('addFinishedGoodForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const good = {
+                    id: Date.now(),
+                    name: document.getElementById('finishedGoodName').value,
+                    quantity: parseInt(document.getElementById('finishedGoodQuantity').value),
+                    unit: document.getElementById('finishedGoodUnit').value,
+                    costPerUnit: parseFloat(document.getElementById('finishedGoodCost').value),
+                    sellingPrice: parseFloat(document.getElementById('finishedGoodPrice').value),
+                    minStock: parseInt(document.getElementById('finishedGoodMinStock').value)
+                };
+                finishedGoods.push(good);
+                saveData();
+                renderFinishedGoods();
+                updateDashboard();
+                populateSelects();
+                closeModal('addFinishedGoodModal');
+                this.reset();
+                showNotification('Finished good added successfully', 'success');
+            });
+            
+            // Customer Form
+            document.getElementById('addCustomerForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const customer = {
+                    id: Date.now(),
+                    name: document.getElementById('customerName').value,
+                    phone: document.getElementById('customerPhone').value,
+                    email: document.getElementById('customerEmail').value,
+                    address: document.getElementById('customerAddress').value,
+                    totalPurchases: 0
+                };
+                customers.push(customer);
+                saveData();
+                renderCustomers();
+                populateSelects();
+                closeModal('addCustomerModal');
+                this.reset();
+                showNotification('Customer added successfully', 'success');
+            });
+            
+            // Repackage Form
+            document.getElementById('repackageForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                processRepackage();
+            });
+            
+            // Settings Form
+            document.getElementById('settingsForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                settings.businessName = document.getElementById('settingsBusinessName').value;
+                settings.currency = document.getElementById('settingsCurrency').value;
+                settings.address = document.getElementById('settingsAddress').value;
+                settings.phone = document.getElementById('settingsPhone').value;
+                settings.email = document.getElementById('settingsEmail').value;
+                saveData();
+                loadSettings();
+                showNotification('Settings saved successfully', 'success');
+            });
+        }
+        
+        function setupProfitCalculator() {
+            const inputs = ['calcRawCost', 'calcPackagingCost', 'calcLabourCost', 'calcTransportCost', 'calcElectricityCost', 'calcOtherCost'];
+            inputs.forEach(id => {
+                document.getElementById(id).addEventListener('input', updateTotalCost);
+            });
+        }
+        
+        function updateTotalCost() {
+            const rawCost = parseFloat(document.getElementById('calcRawCost').value) || 0;
+            const packagingCost = parseFloat(document.getElementById('calcPackagingCost').value) || 0;
+            const labourCost = parseFloat(document.getElementById('calcLabourCost').value) || 0;
+            const transportCost = parseFloat(document.getElementById('calcTransportCost').value) || 0;
+            const electricityCost = parseFloat(document.getElementById('calcElectricityCost').value) || 0;
+            const otherCost = parseFloat(document.getElementById('calcOtherCost').value) || 0;
+            
+            const totalCost = rawCost + packagingCost + labourCost + transportCost + electricityCost + otherCost;
+            document.getElementById('calcTotalCost').value = totalCost.toFixed(2);
+        }
+        
+        function calculateProfit() {
+            const totalCost = parseFloat(document.getElementById('calcTotalCost').value) || 0;
+            const sellingPrice = parseFloat(document.getElementById('calcSellingPrice').value) || 0;
+            
+            if (sellingPrice === 0) {
+                showNotification('Please enter a selling price', 'error');
+                return;
+            }
+            
+            const netProfit = sellingPrice - totalCost;
+            const profitMargin = ((netProfit / sellingPrice) * 100).toFixed(2);
+            const breakEven = totalCost;
+            
+            document.getElementById('netProfit').textContent = `${settings.currency}${netProfit.toFixed(2)}`;
+            document.getElementById('netProfit').style.color = netProfit >= 0 ? '#14B8A6' : '#EF4444';
+            document.getElementById('profitMargin').textContent = `${profitMargin}%`;
+            document.getElementById('breakEvenPrice').textContent = `${settings.currency}${breakEven.toFixed(2)}`;
+            
+            // Cost breakdown
+            const costs = [
+                { name: 'Raw Material', value: parseFloat(document.getElementById('calcRawCost').value) || 0 },
+                { name: 'Packaging', value: parseFloat(document.getElementById('calcPackagingCost').value) || 0 },
+                { name: 'Labour', value: parseFloat(document.getElementById('calcLabourCost').value) || 0 },
+                { name: 'Transport', value: parseFloat(document.getElementById('calcTransportCost').value) || 0 },
+                { name: 'Electricity', value: parseFloat(document.getElementById('calcElectricityCost').value) || 0 },
+                { name: 'Other', value: parseFloat(document.getElementById('calcOtherCost').value) || 0 }
+            ];
+            
+            let breakdownHTML = '';
+            costs.forEach(cost => {
+                if (cost.value > 0) {
+                    const percentage = ((cost.value / totalCost) * 100).toFixed(1);
+                    breakdownHTML += `
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600">${cost.name}</span>
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm font-semibold">${settings.currency}${cost.value.toFixed(2)}</span>
+                                <span class="text-xs text-gray-400">(${percentage}%)</span>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+            
+            document.getElementById('costBreakdown').innerHTML = breakdownHTML;
+            document.getElementById('profitResults').classList.remove('hidden');
+        }
+        
+        function loadSettings() {
+            document.getElementById('businessNameDisplay').textContent = settings.businessName;
+            document.getElementById('settingsBusinessName').value = settings.businessName;
+            document.getElementById('settingsCurrency').value = settings.currency;
+            document.getElementById('settingsAddress').value = settings.address || '';
+            document.getElementById('settingsPhone').value = settings.phone || '';
+            document.getElementById('settingsEmail').value = settings.email || '';
+            
+            // Update all currency symbols
+            document.querySelectorAll('[id^="currencySymbol"]').forEach(el => {
+                el.textContent = settings.currency;
+            });
+        }
+        
+        function updateDashboard() {
+            // Calculate totals
+            const totalRevenue = sales.reduce((sum, sale) => sum + sale.total, 0);
+            const totalProfit = sales.reduce((sum, sale) => sum + sale.profit, 0);
+            
+            // Low stock alerts
+            const lowStockRaw = rawMaterials.filter(m => m.quantity <= m.minStock).length;
+            const lowStockFinished = finishedGoods.filter(g => g.quantity <= g.minStock).length;
+            const lowStockCount = lowStockRaw + lowStockFinished;
+            
+            // Active products
+            const activeProducts = finishedGoods.filter(g => g.quantity > 0).length;
+            
+            document.getElementById('totalRevenue').textContent = `${settings.currency}${totalRevenue.toFixed(2)}`;
+            document.getElementById('totalProfit').textContent = `${settings.currency}${totalProfit.toFixed(2)}`;
+            document.getElementById('lowStockCount').textContent = lowStockCount;
+            document.getElementById('activeProducts').textContent = activeProducts;
+            
+            // Recent sales
+            renderRecentSales();
+        }
+        
+        function renderRecentSales() {
+            const tbody = document.getElementById('recentSalesBody');
+            if (sales.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-gray-400">No sales yet</td></tr>';
+                return;
+            }
+            
+            const recentSales = sales.slice(-5).reverse();
+            tbody.innerHTML = recentSales.map(sale => {
+                const customer = customers.find(c => c.id === sale.customerId);
+                const customerName = customer ? customer.name : 'Walk-in Customer';
+                const itemCount = sale.items.reduce((sum, item) => sum + item.quantity, 0);
+                const profitColor = sale.profit >= 0 ? 'text-teal-600' : 'text-red-600';
+                
+                return `
+                    <tr class="table-row border-b border-gray-100">
+                        <td class="p-3 text-gray-700">${new Date(sale.date).toLocaleDateString()}</td>
+                        <td class="p-3 text-gray-700">${customerName}</td>
+                        <td class="p-3 text-gray-700">${itemCount} items</td>
+                        <td class="p-3 text-right font-semibold text-gray-800">${settings.currency}${sale.total.toFixed(2)}</td>
+                        <td class="p-3 text-right font-semibold ${profitColor}">${settings.currency}${sale.profit.toFixed(2)}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        function renderRawMaterials() {
+            const tbody = document.getElementById('rawMaterialsTable');
+            if (rawMaterials.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center p-8 text-gray-400">No raw materials added</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = rawMaterials.map(material => {
+                const totalValue = material.quantity * material.costPerUnit;
+                const isLowStock = material.quantity <= material.minStock;
+                const statusClass = isLowStock ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800';
+                const statusText = isLowStock ? 'Low Stock' : 'In Stock';
+                
+                return `
+                    <tr class="table-row border-b border-gray-100">
+                        <td class="p-3 text-gray-700 font-semibold">${material.name}</td>
+                        <td class="p-3 text-right text-gray-700">${material.quantity.toFixed(3)} kg</td>
+                        <td class="p-3 text-right text-gray-700">${settings.currency}${material.costPerUnit.toFixed(2)}</td>
+                        <td class="p-3 text-right font-semibold text-gray-800">${settings.currency}${totalValue.toFixed(2)}</td>
+                        <td class="p-3 text-center text-gray-700">${material.minStock} kg</td>
+                        <td class="p-3 text-center">
+                            <span class="px-3 py-1 rounded-full text-xs font-semibold ${statusClass}">${statusText}</span>
+                        </td>
+                        <td class="p-3 text-center">
+                            <button onclick="editRawMaterial(${material.id})" class="text-purple-600 hover:text-purple-800 mr-2" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="deleteRawMaterial(${material.id})" class="text-red-600 hover:text-red-800" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        function renderFinishedGoods() {
+            const tbody = document.getElementById('finishedGoodsTable');
+            if (finishedGoods.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center p-8 text-gray-400">No finished goods added</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = finishedGoods.map(good => {
+                const profitPerUnit = good.sellingPrice - good.costPerUnit;
+                const isLowStock = good.quantity <= good.minStock;
+                const statusClass = isLowStock ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800';
+                const statusText = isLowStock ? 'Low Stock' : 'In Stock';
+                const profitColor = profitPerUnit >= 0 ? 'text-teal-600' : 'text-red-600';
+                
+                return `
+                    <tr class="table-row border-b border-gray-100">
+                        <td class="p-3 text-gray-700 font-semibold">${good.name} (${good.unit})</td>
+                        <td class="p-3 text-right text-gray-700">${good.quantity}</td>
+                        <td class="p-3 text-right text-gray-700">${settings.currency}${good.costPerUnit.toFixed(2)}</td>
+                        <td class="p-3 text-right text-gray-700">${settings.currency}${good.sellingPrice.toFixed(2)}</td>
+                        <td class="p-3 text-right font-semibold ${profitColor}">${settings.currency}${profitPerUnit.toFixed(2)}</td>
+                        <td class="p-3 text-center text-gray-700">${good.minStock}</td>
+                        <td class="p-3 text-center">
+                            <span class="px-3 py-1 rounded-full text-xs font-semibold ${statusClass}">${statusText}</span>
+                        </td>
+                        <td class="p-3 text-center">
+                            <button onclick="editFinishedGood(${good.id})" class="text-purple-600 hover:text-purple-800 mr-2" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="deleteFinishedGood(${good.id})" class="text-red-600 hover:text-red-800" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        function renderCustomers() {
+            const tbody = document.getElementById('customersTable');
+            if (customers.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-gray-400">No customers added</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = customers.map(customer => {
+                return `
+                    <tr class="table-row border-b border-gray-100">
+                        <td class="p-3 text-gray-700 font-semibold">${customer.name}</td>
+                        <td class="p-3 text-gray-700">${customer.phone}</td>
+                        <td class="p-3 text-gray-700">${customer.email || '-'}</td>
+                        <td class="p-3 text-gray-700">${customer.address || '-'}</td>
+                        <td class="p-3 text-center font-semibold text-purple-600">${settings.currency}${customer.totalPurchases.toFixed(2)}</td>
+                        <td class="p-3 text-center">
+                            <button onclick="editCustomer(${customer.id})" class="text-purple-600 hover:text-purple-800 mr-2" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="deleteCustomer(${customer.id})" class="text-red-600 hover:text-red-800" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        function populateSelects() {
+            // Repackage selects
+            const repackageRaw = document.getElementById('repackageRawMaterial');
+            repackageRaw.innerHTML = '<option value="">-- Select Material --</option>' +
+                rawMaterials.map(m => `<option value="${m.id}">${m.name} (${m.quantity.toFixed(3)} kg available)</option>`).join('');
+            
+            const repackageFinished = document.getElementById('repackageFinishedGood');
+            repackageFinished.innerHTML = '<option value="">-- Select Product --</option>' +
+                finishedGoods.map(g => `<option value="${g.id}">${g.name} (${g.unit})</option>`).join('');
+            
+            // Billing product select
+            const billingProduct = document.getElementById('billingProduct');
+            billingProduct.innerHTML = '<option value="">-- Select Product --</option>' +
+                finishedGoods.filter(g => g.quantity > 0).map(g => 
+                    `<option value="${g.id}">${g.name} (${g.unit}) - ${settings.currency}${g.sellingPrice.toFixed(2)} (${g.quantity} in stock)</option>`
+                ).join('');
+            
+            // Customer selects
+            const billingCustomer = document.getElementById('billingCustomer');
+            billingCustomer.innerHTML = '<option value="">-- Walk-in Customer --</option>' +
+                customers.map(c => `<option value="${c.id}">${c.name} - ${c.phone}</option>`).join('');
+            
+            const reportCustomer = document.getElementById('reportCustomer');
+            reportCustomer.innerHTML = '<option value="">All Customers</option>' +
+                customers.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+        }
+        
+        function processRepackage() {
+            const rawId = parseInt(document.getElementById('repackageRawMaterial').value);
+            const quantity = parseFloat(document.getElementById('repackageQuantity').value);
+            const finishedId = parseInt(document.getElementById('repackageFinishedGood').value);
+            const units = parseInt(document.getElementById('repackageUnits').value);
+            
+            if (!rawId || !finishedId || !quantity || !units) {
+                showNotification('Please fill in all fields', 'error');
+                return;
+            }
+            
+            const rawMaterial = rawMaterials.find(m => m.id === rawId);
+            const finishedGood = finishedGoods.find(g => g.id === finishedId);
+            
+            if (rawMaterial.quantity < quantity) {
+                showNotification('Insufficient raw material quantity', 'error');
+                return;
+            }
+            
+            // Deduct from raw material
+            rawMaterial.quantity -= quantity;
+            
+            // Add to finished goods
+            finishedGood.quantity += units;
+            
+            saveData();
+            renderRawMaterials();
+            renderFinishedGoods();
+            updateDashboard();
+            populateSelects();
+            
+            document.getElementById('repackageForm').reset();
+            showNotification(`Successfully repackaged ${quantity}kg into ${units} units of ${finishedGood.name}`, 'success');
+        }
+        
+        function addToCart() {
+            const productId = parseInt(document.getElementById('billingProduct').value);
+            const quantity = parseInt(document.getElementById('billingQuantity').value);
+            
+            if (!productId || !quantity) {
+                showNotification('Please select a product and quantity', 'error');
+                return;
+            }
+            
+            const product = finishedGoods.find(g => g.id === productId);
+            
+            if (product.quantity < quantity) {
+                showNotification('Insufficient stock', 'error');
+                return;
+            }
+            
+            // Check if product already in cart
+            const existingItem = cart.find(item => item.productId === productId);
+            if (existingItem) {
+                existingItem.quantity += quantity;
+            } else {
+                cart.push({
+                    productId: productId,
+                    name: product.name,
+                    unit: product.unit,
+                    quantity: quantity,
+                    price: product.sellingPrice,
+                    cost: product.costPerUnit
+                });
+            }
+            
+            renderCart();
+            document.getElementById('billingQuantity').value = 1;
+        }
+        
+        function renderCart() {
+            const cartDiv = document.getElementById('cartItems');
+            
+            if (cart.length === 0) {
+                cartDiv.innerHTML = '<p class="text-gray-400 text-center py-4">No items in cart</p>';
+                document.getElementById('cartSubtotal').textContent = `${settings.currency}0.00`;
+                document.getElementById('cartTotal').textContent = `${settings.currency}0.00`;
+                document.getElementById('cartItemCount').textContent = '0';
+                document.getElementById('cartProfit').textContent = `${settings.currency}0.00`;
+                return;
+            }
+            
+            let subtotal = 0;
+            let totalProfit = 0;
+            let itemCount = 0;
+            
+            cartDiv.innerHTML = cart.map((item, index) => {
+                const itemTotal = item.quantity * item.price;
+                const itemProfit = item.quantity * (item.price - item.cost);
+                subtotal += itemTotal;
+                totalProfit += itemProfit;
+                itemCount += item.quantity;
+                
+                return `
+                    <div class="flex justify-between items-center bg-gray-50 p-3 rounded-lg">
+                        <div class="flex-1">
+                            <p class="font-semibold text-gray-800">${item.name} (${item.unit})</p>
+                            <p class="text-sm text-gray-600">Qty: ${item.quantity} × ${settings.currency}${item.price.toFixed(2)}</p>
+                        </div>
+                        <div class="text-right mr-3">
+                            <p class="font-bold text-gray-800">${settings.currency}${itemTotal.toFixed(2)}</p>
+                        </div>
+                        <button onclick="removeFromCart(${index})" class="text-red-600 hover:text-red-800">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+            }).join('');
+            
+            document.getElementById('cartSubtotal').textContent = `${settings.currency}${subtotal.toFixed(2)}`;
+            document.getElementById('cartTotal').textContent = `${settings.currency}${subtotal.toFixed(2)}`;
+            document.getElementById('cartItemCount').textContent = itemCount;
+            document.getElementById('cartProfit').textContent = `${settings.currency}${totalProfit.toFixed(2)}`;
+        }
+        
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            renderCart();
+        }
+        
+        function completeSale() {
+            if (cart.length === 0) {
+                showNotification('Cart is empty', 'error');
+                return;
+            }
+            
+            const customerId = document.getElementById('billingCustomer').value;
+            
+            // Check stock availability
+            for (const item of cart) {
+                const product = finishedGoods.find(g => g.id === item.productId);
+                if (product.quantity < item.quantity) {
+                    showNotification(`Insufficient stock for ${product.name}`, 'error');
+                    return;
+                }
+            }
+            
+            // Deduct stock and calculate totals
+            let total = 0;
+            let profit = 0;
+            
+            cart.forEach(item => {
+                const product = finishedGoods.find(g => g.id === item.productId);
+                product.quantity -= item.quantity;
+                total += item.quantity * item.price;
+                profit += item.quantity * (item.price - item.cost);
+            });
+            
+            // Create sale record
+            const sale = {
+                id: Date.now(),
+                date: new Date().toISOString(),
+                customerId: customerId ? parseInt(customerId) : null,
+                items: [...cart],
+                total: total,
+                profit: profit
+            };
+            
+            sales.push(sale);
+            
+            // Update customer total purchases
+            if (customerId) {
+                const customer = customers.find(c => c.id === parseInt(customerId));
+                if (customer) {
+                    customer.totalPurchases += total;
+                }
+            }
+            
+            saveData();
+            renderFinishedGoods();
+            renderCustomers();
+            updateDashboard();
+            renderReports();
+            populateSelects();
+            
+            // Generate invoice
+            generateInvoice(sale);
+            
+            // Clear cart
+            cart = [];
+            renderCart();
+            
+            showNotification('Sale completed successfully', 'success');
+        }
+        
+        function generateInvoice(sale) {
+            const customer = sale.customerId ? customers.find(c => c.id === sale.customerId) : null;
+            const customerName = customer ? customer.name : 'Walk-in Customer';
+            const customerPhone = customer ? customer.phone : '-';
+            const customerAddress = customer ? customer.address : '-';
+            
+            const invoiceHTML = `
+                <div class="invoice-header text-center mb-6">
+                    <h1 class="text-3xl font-bold text-purple-600">${settings.businessName}</h1>
+                    <p class="text-gray-600">${settings.address || ''}</p>
+                    <p class="text-gray-600">${settings.phone || ''} | ${settings.email || ''}</p>
+                </div>
+                
+                <div class="invoice-details grid grid-cols-2 gap-4 mb-6">
+                    <div>
+                        <h3 class="font-bold text-gray-800 mb-2">Bill To:</h3>
+                        <p class="text-gray-700">${customerName}</p>
+                        <p class="text-gray-600 text-sm">${customerPhone}</p>
+                        <p class="text-gray-600 text-sm">${customerAddress}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-gray-600"><strong>Invoice #:</strong> INV-${sale.id}</p>
+                        <p class="text-gray-600"><strong>Date:</strong> ${new Date(sale.date).toLocaleDateString()}</p>
+                        <p class="text-gray-600"><strong>Time:</strong> ${new Date(sale.date).toLocaleTimeString()}</p>
+                    </div>
+                </div>
+                
+                <table class="w-full mb-6">
+                    <thead>
+                        <tr class="border-b-2 border-gray-300">
+                            <th class="text-left p-3">Item</th>
+                            <th class="text-center p-3">Quantity</th>
+                            <th class="text-right p-3">Price</th>
+                            <th class="text-right p-3">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${sale.items.map(item => `
+                            <tr class="border-b border-gray-200">
+                                <td class="p-3">${item.name} (${item.unit})</td>
+                                <td class="text-center p-3">${item.quantity}</td>
+                                <td class="text-right p-3">${settings.currency}${item.price.toFixed(2)}</td>
+                                <td class="text-right p-3">${settings.currency}${(item.quantity * item.price).toFixed(2)}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                    <tfoot>
+                        <tr class="border-t-2 border-gray-300">
+                            <td colspan="3" class="text-right p-3 font-bold">Total:</td>
+                            <td class="text-right p-3 font-bold text-lg">${settings.currency}${sale.total.toFixed(2)}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+                
+                <div class="text-center text-gray-600 text-sm mt-8">
+                    <p>Thank you for your business!</p>
+                    <p class="mt-2">This is a computer-generated invoice.</p>
+                </div>
+            `;
+            
+            document.getElementById('invoiceContent').innerHTML = invoiceHTML;
+            showModal('invoiceModal');
+        }
+        
+        function printInvoice() {
+            window.print();
+        }
+        
+        function renderReports() {
+            filterReports();
+        }
+        
+        function filterReports() {
+            const fromDate = document.getElementById('reportFromDate').value;
+            const toDate = document.getElementById('reportToDate').value;
+            const customerId = document.getElementById('reportCustomer').value;
+            
+            let filteredSales = [...sales];
+            
+            if (fromDate) {
+                filteredSales = filteredSales.filter(s => new Date(s.date) >= new Date(fromDate));
+            }
+            
+            if (toDate) {
+                const endDate = new Date(toDate);
+                endDate.setHours(23, 59, 59, 999);
+                filteredSales = filteredSales.filter(s => new Date(s.date) <= endDate);
+            }
+            
+            if (customerId) {
+                filteredSales = filteredSales.filter(s => s.customerId === parseInt(customerId));
+            }
+            
+            // Calculate totals
+            const totalRevenue = filteredSales.reduce((sum, s) => sum + s.total, 0);
+            const totalProfit = filteredSales.reduce((sum, s) => sum + s.profit, 0);
+            
+            document.getElementById('reportRevenue').textContent = `${settings.currency}${totalRevenue.toFixed(2)}`;
+            document.getElementById('reportProfit').textContent = `${settings.currency}${totalProfit.toFixed(2)}`;
+            document.getElementById('reportSalesCount').textContent = filteredSales.length;
+            
+            // Render table
+            const tbody = document.getElementById('reportsTable');
+            if (filteredSales.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center p-8 text-gray-400">No sales data</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = filteredSales.reverse().map(sale => {
+                const customer = sale.customerId ? customers.find(c => c.id === sale.customerId) : null;
+                const customerName = customer ? customer.name : 'Walk-in';
+                const itemCount = sale.items.reduce((sum, item) => sum + item.quantity, 0);
+                const profitColor = sale.profit >= 0 ? 'text-teal-600' : 'text-red-600';
+                
+                return `
+                    <tr class="table-row border-b border-gray-100">
+                        <td class="p-3 text-gray-700">${new Date(sale.date).toLocaleDateString()}</td>
+                        <td class="p-3 text-gray-700">INV-${sale.id}</td>
+                        <td class="p-3 text-gray-700">${customerName}</td>
+                        <td class="p-3 text-gray-700">${itemCount} items</td>
+                        <td class="p-3 text-right font-semibold text-gray-800">${settings.currency}${sale.total.toFixed(2)}</td>
+                        <td class="p-3 text-right font-semibold ${profitColor}">${settings.currency}${sale.profit.toFixed(2)}</td>
+                        <td class="p-3 text-center">
+                            <button onclick="viewSaleDetails(${sale.id})" class="text-purple-600 hover:text-purple-800" title="View Invoice">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        function viewSaleDetails(saleId) {
+            const sale = sales.find(s => s.id === saleId);
+            if (sale) {
+                generateInvoice(sale);
+            }
+        }
+        
+        function exportToCSV() {
+            const fromDate = document.getElementById('reportFromDate').value;
+            const toDate = document.getElementById('reportToDate').value;
+            const customerId = document.getElementById('reportCustomer').value;
+            
+            let filteredSales = [...sales];
+            
+            if (fromDate) {
+                filteredSales = filteredSales.filter(s => new Date(s.date) >= new Date(fromDate));
+            }
+            
+            if (toDate) {
+                const endDate = new Date(toDate);
+                endDate.setHours(23, 59, 59, 999);
+                filteredSales = filteredSales.filter(s => new Date(s.date) <= endDate);
+            }
+            
+            if (customerId) {
+                filteredSales = filteredSales.filter(s => s.customerId === parseInt(customerId));
+            }
+            
+            if (filteredSales.length === 0) {
+                showNotification('No data to export', 'error');
+                return;
+            }
+            
+            let csv = 'Date,Invoice #,Customer,Items,Total,Profit\n';
+            
+            filteredSales.forEach(sale => {
+                const customer = sale.customerId ? customers.find(c => c.id === sale.customerId) : null;
+                const customerName = customer ? customer.name : 'Walk-in';
+                const itemCount = sale.items.reduce((sum, item) => sum + item.quantity, 0);
+                const date = new Date(sale.date).toLocaleDateString();
+                
+                csv += `${date},INV-${sale.id},"${customerName}",${itemCount},${sale.total.toFixed(2)},${sale.profit.toFixed(2)}\n`;
+            });
+            
+            downloadFile(csv, 'sales-report.csv', 'text/csv');
+            showNotification('CSV exported successfully', 'success');
+        }
+        
+        function exportToExcel() {
+            // For simplicity, we're creating a CSV that Excel can open
+            const fromDate = document.getElementById('reportFromDate').value;
+            const toDate = document.getElementById('reportToDate').value;
+            const customerId = document.getElementById('reportCustomer').value;
+            
+            let filteredSales = [...sales];
+            
+            if (fromDate) {
+                filteredSales = filteredSales.filter(s => new Date(s.date) >= new Date(fromDate));
+            }
+            
+            if (toDate) {
+                const endDate = new Date(toDate);
+                endDate.setHours(23, 59, 59, 999);
+                filteredSales = filteredSales.filter(s => new Date(s.date) <= endDate);
+            }
+            
+            if (customerId) {
+                filteredSales = filteredSales.filter(s => s.customerId === parseInt(customerId));
+            }
+            
+            if (filteredSales.length === 0) {
+                showNotification('No data to export', 'error');
+                return;
+            }
+            
+            let csv = 'Date,Invoice #,Customer,Items,Total,Profit\n';
+            
+            filteredSales.forEach(sale => {
+                const customer = sale.customerId ? customers.find(c => c.id === sale.customerId) : null;
+                const customerName = customer ? customer.name : 'Walk-in';
+                const itemCount = sale.items.reduce((sum, item) => sum + item.quantity, 0);
+                const date = new Date(sale.date).toLocaleDateString();
+                
+                csv += `${date},INV-${sale.id},"${customerName}",${itemCount},${sale.total.toFixed(2)},${sale.profit.toFixed(2)}\n`;
+            });
+            
+            downloadFile(csv, 'sales-report.xls', 'application/vnd.ms-excel');
+            showNotification('Excel file exported successfully', 'success');
+        }
+        
+        function downloadFile(content, filename, mimeType) {
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+        
+        function exportAllData() {
+            const data = {
+                rawMaterials,
+                finishedGoods,
+                customers,
+                sales,
+                settings,
+                exportDate: new Date().toISOString()
+            };
+            
+            const json = JSON.stringify(data, null, 2);
+            downloadFile(json, `business-data-backup-${Date.now()}.json`, 'application/json');
+            showNotification('All data exported successfully', 'success');
+        }
+        
+        function confirmClearData() {
+            if (confirm('Are you sure you want to clear all data? This action cannot be undone!')) {
+                rawMaterials = [];
+                finishedGoods = [];
+                customers = [];
+                sales = [];
+                cart = [];
+                
+                saveData();
+                
+                renderRawMaterials();
+                renderFinishedGoods();
+                renderCustomers();
+                renderReports();
+                updateDashboard();
+                populateSelects();
+                renderCart();
+                
+                showNotification('All data cleared successfully', 'success');
+            }
+        }
+        
+        // CRUD Functions
+        function deleteRawMaterial(id) {
+            if (confirm('Are you sure you want to delete this raw material?')) {
+                rawMaterials = rawMaterials.filter(m => m.id !== id);
+                saveData();
+                renderRawMaterials();
+                updateDashboard();
+                populateSelects();
+                showNotification('Raw material deleted', 'success');
+            }
+        }
+        
+        function deleteFinishedGood(id) {
+            if (confirm('Are you sure you want to delete this finished good?')) {
+                finishedGoods = finishedGoods.filter(g => g.id !== id);
+                saveData();
+                renderFinishedGoods();
+                updateDashboard();
+                populateSelects();
+                showNotification('Finished good deleted', 'success');
+            }
+        }
+        
+        function deleteCustomer(id) {
+            if (confirm('Are you sure you want to delete this customer?')) {
+                customers = customers.filter(c => c.id !== id);
+                saveData();
+                renderCustomers();
+                populateSelects();
+                showNotification('Customer deleted', 'success');
+            }
+        }
+        
+        function editRawMaterial(id) {
+            const material = rawMaterials.find(m => m.id === id);
+            if (material) {
+                document.getElementById('rawMaterialName').value = material.name;
+                document.getElementById('rawMaterialQuantity').value = material.quantity;
+                document.getElementById('rawMaterialCost').value = material.costPerUnit;
+                document.getElementById('rawMaterialMinStock').value = material.minStock;
+                
+                showModal('addRawMaterialModal');
+                
+                // Change form behavior to edit
+                const form = document.getElementById('addRawMaterialForm');
+                form.onsubmit = function(e) {
+                    e.preventDefault();
+                    material.name = document.getElementById('rawMaterialName').value;
+                    material.quantity = parseFloat(document.getElementById('rawMaterialQuantity').value);
+                    material.costPerUnit = parseFloat(document.getElementById('rawMaterialCost').value);
+                    material.minStock = parseFloat(document.getElementById('rawMaterialMinStock').value);
+                    
+                    saveData();
+                    renderRawMaterials();
+                    updateDashboard();
+                    populateSelects();
+                    closeModal('addRawMaterialModal');
+                    
+                    // Reset form behavior
+                    setupForms();
+                    showNotification('Raw material updated', 'success');
+                };
+            }
+        }
+        
+        function editFinishedGood(id) {
+            const good = finishedGoods.find(g => g.id === id);
+            if (good) {
+                document.getElementById('finishedGoodName').value = good.name;
+                document.getElementById('finishedGoodQuantity').value = good.quantity;
+                document.getElementById('finishedGoodUnit').value = good.unit;
+                document.getElementById('finishedGoodCost').value = good.costPerUnit;
+                document.getElementById('finishedGoodPrice').value = good.sellingPrice;
+                document.getElementById('finishedGoodMinStock').value = good.minStock;
+                
+                showModal('addFinishedGoodModal');
+                
+                // Change form behavior to edit
+                const form = document.getElementById('addFinishedGoodForm');
+                form.onsubmit = function(e) {
+                    e.preventDefault();
+                    good.name = document.getElementById('finishedGoodName').value;
+                    good.quantity = parseInt(document.getElementById('finishedGoodQuantity').value);
+                    good.unit = document.getElementById('finishedGoodUnit').value;
+                    good.costPerUnit = parseFloat(document.getElementById('finishedGoodCost').value);
+                    good.sellingPrice = parseFloat(document.getElementById('finishedGoodPrice').value);
+                    good.minStock = parseInt(document.getElementById('finishedGoodMinStock').value);
+                    
+                    saveData();
+                    renderFinishedGoods();
+                    updateDashboard();
+                    populateSelects();
+                    closeModal('addFinishedGoodModal');
+                    
+                    // Reset form behavior
+                    setupForms();
+                    showNotification('Finished good updated', 'success');
+                };
+            }
+        }
+        
+        function editCustomer(id) {
+            const customer = customers.find(c => c.id === id);
+            if (customer) {
+                document.getElementById('customerName').value = customer.name;
+                document.getElementById('customerPhone').value = customer.phone;
+                document.getElementById('customerEmail').value = customer.email || '';
+                document.getElementById('customerAddress').value = customer.address || '';
+                
+                showModal('addCustomerModal');
+                
+                // Change form behavior to edit
+                const form = document.getElementById('addCustomerForm');
+                form.onsubmit = function(e) {
+                    e.preventDefault();
+                    customer.name = document.getElementById('customerName').value;
+                    customer.phone = document.getElementById('customerPhone').value;
+                    customer.email = document.getElementById('customerEmail').value;
+                    customer.address = document.getElementById('customerAddress').value;
+                    
+                    saveData();
+                    renderCustomers();
+                    populateSelects();
+                    closeModal('addCustomerModal');
+                    
+                    // Reset form behavior
+                    setupForms();
+                    showNotification('Customer updated', 'success');
+                };
+            }
+        }
+        
+        // Modal Functions
+        function showModal(modalId) {
+            document.getElementById(modalId).classList.remove('hidden');
+            document.getElementById(modalId).classList.add('flex');
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+            document.getElementById(modalId).classList.remove('flex');
+        }
+        
+        function showAddRawMaterialModal() {
+            showModal('addRawMaterialModal');
+        }
+        
+        function showAddFinishedGoodModal() {
+            showModal('addFinishedGoodModal');
+        }
+        
+        function showAddCustomerModal() {
+            showModal('addCustomerModal');
+        }
+        
+        // Notification
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg text-white ${
+                type === 'success' ? 'bg-teal-500' : 'bg-red-500'
+            }`;
+            notification.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} mr-2"></i>${message}`;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'fadeOut 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+        
+        // Save Data
+        function saveData() {
+            localStorage.setItem('rawMaterials', JSON.stringify(rawMaterials));
+            localStorage.setItem('finishedGoods', JSON.stringify(finishedGoods));
+            localStorage.setItem('customers', JSON.stringify(customers));
+            localStorage.setItem('sales', JSON.stringify(sales));
+            localStorage.setItem('settings', JSON.stringify(settings));
+        }
+    </script>
+</body>
+</html>
