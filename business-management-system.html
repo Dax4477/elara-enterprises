@@ -554,12 +554,29 @@
         
         <!-- Grain Calculator Tab -->
         <div id="grain-calculator" class="tab-content">
-            <h2 class="text-3xl font-bold text-gray-800 mb-6">Grain Selling Profit Calculator</h2>
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-3xl font-bold text-gray-800">Grain Selling Profit Calculator</h2>
+                <div class="flex gap-2">
+                    <button onclick="showGrainComparison()" class="btn-secondary text-white px-4 py-2 rounded-lg">
+                        <i class="fas fa-balance-scale mr-2"></i>Compare
+                    </button>
+                    <button onclick="exportGrainToPDF()" class="btn-primary text-white px-4 py-2 rounded-lg">
+                        <i class="fas fa-file-pdf mr-2"></i>Export PDF
+                    </button>
+                </div>
+            </div>
             
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                 <!-- Calculator Form -->
                 <div class="card p-6">
                     <form id="grainCalculatorForm" class="space-y-4">
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">
+                                <i class="fas fa-seedling text-purple-600 mr-2"></i>Grain Name (Optional)
+                            </label>
+                            <input type="text" id="grainName" class="input-field w-full" placeholder="e.g., Basmati Rice, Wheat" />
+                        </div>
+                        
                         <div>
                             <label class="block text-gray-700 font-semibold mb-2">
                                 <i class="fas fa-rupee-sign text-purple-600 mr-2"></i>Total Cost Price (<span class="currencySymbol">₹</span>)
@@ -592,9 +609,14 @@
                             <p class="text-xs text-gray-500 mt-1">Price you'll sell each unit for</p>
                         </div>
                         
-                        <button type="button" onclick="calculateGrainProfit()" class="btn-primary text-white px-6 py-3 rounded-lg w-full">
-                            <i class="fas fa-calculator mr-2"></i>Calculate Profit
-                        </button>
+                        <div class="flex gap-2">
+                            <button type="button" onclick="calculateGrainProfit()" class="btn-primary text-white px-6 py-3 rounded-lg flex-1">
+                                <i class="fas fa-calculator mr-2"></i>Calculate
+                            </button>
+                            <button type="button" onclick="saveGrainToHistory()" class="btn-secondary text-white px-6 py-3 rounded-lg flex-1">
+                                <i class="fas fa-save mr-2"></i>Save
+                            </button>
+                        </div>
                     </form>
                 </div>
                 
@@ -606,9 +628,11 @@
                     </div>
                     
                     <div id="grainResult" class="card p-6 hidden">
-                        <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                            <i class="fas fa-chart-pie text-purple-600 mr-2"></i>
-                            Calculated Results
+                        <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center justify-between">
+                            <span><i class="fas fa-chart-pie text-purple-600 mr-2"></i>Calculated Results</span>
+                            <button onclick="exportCurrentGrainToPDF()" class="text-sm text-purple-600 hover:text-purple-800">
+                                <i class="fas fa-print"></i>
+                            </button>
                         </h3>
                         
                         <div class="space-y-4">
@@ -668,12 +692,52 @@
                             How to Use
                         </h4>
                         <ul class="text-sm text-gray-600 space-y-1">
-                            <li>• Enter the total cost and total weight of your grains</li>
-                            <li>• Define the unit size you want to sell (e.g., 1g, 5g, 100g)</li>
-                            <li>• Enter the selling price per unit</li>
-                            <li>• Click Calculate to see detailed profit analysis</li>
+                            <li>• Enter grain details and costs</li>
+                            <li>• Click Calculate to see profit analysis</li>
+                            <li>• Click Save to add to history</li>
+                            <li>• Use Compare to evaluate different strategies</li>
                         </ul>
                     </div>
+                </div>
+            </div>
+            
+            <!-- Calculation History -->
+            <div class="card p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-gray-800 flex items-center">
+                        <i class="fas fa-history text-purple-600 mr-2"></i>
+                        Calculation History
+                    </h3>
+                    <div class="flex gap-2">
+                        <button onclick="exportHistoryToCSV()" class="text-sm text-teal-600 hover:text-teal-800">
+                            <i class="fas fa-file-csv mr-1"></i>Export CSV
+                        </button>
+                        <button onclick="clearGrainHistory()" class="text-sm text-red-600 hover:text-red-800">
+                            <i class="fas fa-trash mr-1"></i>Clear All
+                        </button>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b border-gray-200">
+                                <th class="text-left p-3 text-gray-600 font-semibold">Date</th>
+                                <th class="text-left p-3 text-gray-600 font-semibold">Grain</th>
+                                <th class="text-right p-3 text-gray-600 font-semibold">Cost</th>
+                                <th class="text-right p-3 text-gray-600 font-semibold">Weight (g)</th>
+                                <th class="text-right p-3 text-gray-600 font-semibold">Unit Size</th>
+                                <th class="text-right p-3 text-gray-600 font-semibold">Price/Unit</th>
+                                <th class="text-right p-3 text-gray-600 font-semibold">Profit</th>
+                                <th class="text-right p-3 text-gray-600 font-semibold">Margin %</th>
+                                <th class="text-center p-3 text-gray-600 font-semibold">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="grainHistoryTable">
+                            <tr>
+                                <td colspan="9" class="text-center p-8 text-gray-400">No calculations saved yet</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
