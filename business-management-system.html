@@ -2006,6 +2006,80 @@
             }, 3000);
         }
         
+        // Grain Calculator Function
+        function calculateGrainProfit() {
+            const cost = parseFloat(document.getElementById('grainCost').value);
+            const weight = parseFloat(document.getElementById('grainWeight').value);
+            const unitSize = parseFloat(document.getElementById('grainUnitSize').value);
+            const unitPrice = parseFloat(document.getElementById('grainUnitPrice').value);
+
+            const errorMsg = document.getElementById('grainErrorMsg');
+            const errorText = document.getElementById('grainErrorText');
+            const resultDiv = document.getElementById('grainResult');
+            
+            // Hide previous results and errors
+            errorMsg.classList.add('hidden');
+            resultDiv.classList.add('hidden');
+
+            // Validate inputs
+            if (isNaN(cost) || cost <= 0) {
+                errorText.textContent = 'Please enter a valid Total Cost Price greater than 0.';
+                errorMsg.classList.remove('hidden');
+                return;
+            }
+            if (isNaN(weight) || weight <= 0) {
+                errorText.textContent = 'Please enter a valid Total Weight (grams) greater than 0.';
+                errorMsg.classList.remove('hidden');
+                return;
+            }
+            if (isNaN(unitSize) || unitSize <= 0 || unitSize > weight) {
+                errorText.textContent = 'Please enter a valid Unit Size greater than 0 and less than or equal to Total Weight.';
+                errorMsg.classList.remove('hidden');
+                return;
+            }
+            if (isNaN(unitPrice) || unitPrice <= 0) {
+                errorText.textContent = 'Please enter a valid Selling Price per Unit greater than 0.';
+                errorMsg.classList.remove('hidden');
+                return;
+            }
+
+            // Calculate units count
+            const units = weight / unitSize;
+
+            // Calculate cost per unit
+            const costPerUnit = cost / units;
+
+            // Calculate profit per unit
+            const profitPerUnit = unitPrice - costPerUnit;
+
+            // Calculate total profit and total revenue
+            const totalProfit = profitPerUnit * units;
+            const totalRevenue = cost + totalProfit;
+
+            // Calculate profit percentage
+            const profitPercent = (totalProfit / cost) * 100;
+
+            // Update UI with results
+            document.getElementById('grainTotalUnits').textContent = units.toFixed(0);
+            document.getElementById('grainCostPerUnit').textContent = `${settings.currency}${costPerUnit.toFixed(2)}`;
+            document.getElementById('grainSellingPerUnit').textContent = `${settings.currency}${unitPrice.toFixed(2)}`;
+            document.getElementById('grainProfitPerUnit').textContent = `${settings.currency}${profitPerUnit.toFixed(2)}`;
+            document.getElementById('grainTotalCost').textContent = `${settings.currency}${cost.toFixed(2)}`;
+            document.getElementById('grainTotalRevenue').textContent = `${settings.currency}${totalRevenue.toFixed(2)}`;
+            document.getElementById('grainTotalProfit').textContent = `${settings.currency}${totalProfit.toFixed(2)}`;
+            document.getElementById('grainProfitPercent').textContent = `${profitPercent.toFixed(2)}%`;
+
+            // Color code profit
+            const profitColor = totalProfit >= 0 ? 'text-teal-600' : 'text-red-600';
+            document.getElementById('grainTotalProfit').className = `font-bold text-xl ${profitColor}`;
+            document.getElementById('grainProfitPerUnit').className = `font-bold ${profitColor}`;
+            
+            // Show results
+            resultDiv.classList.remove('hidden');
+            
+            showNotification('Profit calculated successfully', 'success');
+        }
+        
         // Save Data
         function saveData() {
             localStorage.setItem('rawMaterials', JSON.stringify(rawMaterials));
