@@ -979,6 +979,198 @@
             </div>
         </div>
         
+        <!-- Advanced Analysis Tab -->
+        <div id="analysis" class="tab-content space-y-6">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-3xl font-bold text-gray-800 dark:text-white">Advanced Business Analysis</h2>
+                <button onclick="refreshAnalytics()" class="btn-primary text-white px-4 py-2 rounded-lg">
+                    <i class="fas fa-sync-alt mr-2"></i>Refresh
+                </button>
+            </div>
+            
+            <!-- Key Metrics Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="card p-6 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border-l-4 border-purple-600">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-bold text-purple-600 dark:text-purple-400 uppercase">Total Revenue</p>
+                            <h3 class="text-3xl font-bold text-gray-800 dark:text-white mt-2">₹<span id="an-total-revenue">0</span></h3>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">All time sales</p>
+                        </div>
+                        <div class="bg-purple-600 p-3 rounded-full">
+                            <i class="fas fa-chart-line text-white text-2xl"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card p-6 bg-gradient-to-br from-teal-50 to-teal-100 dark:from-teal-900/20 dark:to-teal-800/20 border-l-4 border-teal-600">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-bold text-teal-600 dark:text-teal-400 uppercase">Total Profit</p>
+                            <h3 class="text-3xl font-bold text-gray-800 dark:text-white mt-2">₹<span id="an-total-profit">0</span></h3>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1"><span id="an-profit-margin">0</span>% margin</p>
+                        </div>
+                        <div class="bg-teal-600 p-3 rounded-full">
+                            <i class="fas fa-coins text-white text-2xl"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card p-6 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-l-4 border-blue-600">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase">Avg Sale Value</p>
+                            <h3 class="text-3xl font-bold text-gray-800 dark:text-white mt-2">₹<span id="an-avg-sale">0</span></h3>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1"><span id="an-total-sales">0</span> transactions</p>
+                        </div>
+                        <div class="bg-blue-600 p-3 rounded-full">
+                            <i class="fas fa-receipt text-white text-2xl"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card p-6 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 border-l-4 border-orange-600">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-bold text-orange-600 dark:text-orange-400 uppercase">Active Customers</p>
+                            <h3 class="text-3xl font-bold text-gray-800 dark:text-white mt-2" id="an-active-customers">0</h3>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Total: <span id="an-total-customers">0</span></p>
+                        </div>
+                        <div class="bg-orange-600 p-3 rounded-full">
+                            <i class="fas fa-users text-white text-2xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Charts Row -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Sales Trend Chart -->
+                <div class="card p-6">
+                    <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4 flex items-center">
+                        <i class="fas fa-chart-area text-purple-600 mr-2"></i>
+                        Sales Trend (Last 30 Days)
+                    </h3>
+                    <canvas id="salesTrendChart" height="250"></canvas>
+                </div>
+                
+                <!-- Product Performance -->
+                <div class="card p-6">
+                    <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4 flex items-center">
+                        <i class="fas fa-trophy text-teal-600 mr-2"></i>
+                        Top Products by Revenue
+                    </h3>
+                    <canvas id="productRevenueChart" height="250"></canvas>
+                </div>
+            </div>
+            
+            <!-- Detailed Analytics Row -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Inventory Value -->
+                <div class="card p-6">
+                    <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4 flex items-center">
+                        <i class="fas fa-boxes text-blue-600 mr-2"></i>
+                        Inventory Overview
+                    </h3>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center pb-3 border-b border-gray-200 dark:border-gray-700">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">Raw Materials Value</span>
+                            <span class="font-bold text-gray-800 dark:text-white">₹<span id="an-raw-value">0</span></span>
+                        </div>
+                        <div class="flex justify-between items-center pb-3 border-b border-gray-200 dark:border-gray-700">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">Finished Goods Value</span>
+                            <span class="font-bold text-gray-800 dark:text-white">₹<span id="an-finished-value">0</span></span>
+                        </div>
+                        <div class="flex justify-between items-center pb-3 border-b border-gray-200 dark:border-gray-700">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">Total Inventory Items</span>
+                            <span class="font-bold text-gray-800 dark:text-white" id="an-total-items">0</span>
+                        </div>
+                        <div class="flex justify-between items-center bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg">
+                            <span class="text-sm font-semibold text-purple-700 dark:text-purple-300">Total Inventory Value</span>
+                            <span class="font-bold text-xl text-purple-600 dark:text-purple-400">₹<span id="an-total-inventory">0</span></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Customer Insights -->
+                <div class="card p-6">
+                    <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4 flex items-center">
+                        <i class="fas fa-user-chart text-teal-600 mr-2"></i>
+                        Customer Insights
+                    </h3>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center pb-3 border-b border-gray-200 dark:border-gray-700">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">Top Customer</span>
+                            <span class="font-bold text-gray-800 dark:text-white text-right" id="an-top-customer">-</span>
+                        </div>
+                        <div class="flex justify-between items-center pb-3 border-b border-gray-200 dark:border-gray-700">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">Customer Lifetime Value</span>
+                            <span class="font-bold text-gray-800 dark:text-white">₹<span id="an-clv">0</span></span>
+                        </div>
+                        <div class="flex justify-between items-center pb-3 border-b border-gray-200 dark:border-gray-700">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">Repeat Customer Rate</span>
+                            <span class="font-bold text-gray-800 dark:text-white"><span id="an-repeat-rate">0</span>%</span>
+                        </div>
+                        <div class="flex justify-between items-center bg-teal-50 dark:bg-teal-900/20 p-3 rounded-lg">
+                            <span class="text-sm font-semibold text-teal-700 dark:text-teal-300">Avg Customer Value</span>
+                            <span class="font-bold text-xl text-teal-600 dark:text-teal-400">₹<span id="an-avg-customer-value">0</span></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Production Insights -->
+                <div class="card p-6">
+                    <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4 flex items-center">
+                        <i class="fas fa-industry text-orange-600 mr-2"></i>
+                        Production Insights
+                    </h3>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center pb-3 border-b border-gray-200 dark:border-gray-700">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">Production Runs</span>
+                            <span class="font-bold text-gray-800 dark:text-white" id="an-prod-runs">0</span>
+                        </div>
+                        <div class="flex justify-between items-center pb-3 border-b border-gray-200 dark:border-gray-700">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">Total Units Produced</span>
+                            <span class="font-bold text-gray-800 dark:text-white" id="an-units-produced">0</span>
+                        </div>
+                        <div class="flex justify-between items-center pb-3 border-b border-gray-200 dark:border-gray-700">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">Production Profit</span>
+                            <span class="font-bold text-gray-800 dark:text-white">₹<span id="an-prod-profit">0</span></span>
+                        </div>
+                        <div class="flex justify-between items-center bg-orange-50 dark:bg-orange-900/20 p-3 rounded-lg">
+                            <span class="text-sm font-semibold text-orange-700 dark:text-orange-300">Avg Profit/Run</span>
+                            <span class="font-bold text-xl text-orange-600 dark:text-orange-400">₹<span id="an-avg-prod-profit">0</span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Growth Metrics -->
+            <div class="card p-6">
+                <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4 flex items-center">
+                    <i class="fas fa-rocket text-purple-600 mr-2"></i>
+                    Business Growth Indicators
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="text-center p-4 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-lg">
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">This Month vs Last Month</p>
+                        <h4 class="text-3xl font-bold" id="an-month-growth">+0%</h4>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Revenue Growth</p>
+                    </div>
+                    <div class="text-center p-4 bg-gradient-to-br from-teal-50 to-teal-100 dark:from-teal-900/20 dark:to-teal-800/20 rounded-lg">
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">Best Performing Day</p>
+                        <h4 class="text-3xl font-bold text-gray-800 dark:text-white" id="an-best-day">-</h4>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">₹<span id="an-best-day-revenue">0</span></p>
+                    </div>
+                    <div class="text-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg">
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">Inventory Turnover</p>
+                        <h4 class="text-3xl font-bold text-gray-800 dark:text-white"><span id="an-turnover">0</span>x</h4>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">per month</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         <!-- Settings Tab -->
         <div id="settings" class="tab-content">
             <h2 class="text-3xl font-bold text-gray-800 mb-6">Settings</h2>
