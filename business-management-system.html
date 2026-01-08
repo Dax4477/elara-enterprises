@@ -2226,10 +2226,384 @@
             document.getElementById('grainTotalProfit').className = `font-bold text-xl ${profitColor}`;
             document.getElementById('grainProfitPerUnit').className = `font-bold ${profitColor}`;
             
+            // Store current calculation
+            currentGrainCalc = {
+                grainName: document.getElementById('grainName').value || 'Unnamed',
+                cost: cost,
+                weight: weight,
+                unitSize: unitSize,
+                unitPrice: unitPrice,
+                units: units,
+                costPerUnit: costPerUnit,
+                profitPerUnit: profitPerUnit,
+                totalRevenue: totalRevenue,
+                totalProfit: totalProfit,
+                profitPercent: profitPercent
+            };
+            
             // Show results
             resultDiv.classList.remove('hidden');
             
             showNotification('Profit calculated successfully', 'success');
+        }
+        
+        // Save Grain Calculation to History
+        function saveGrainToHistory() {
+            if (!currentGrainCalc) {
+                showNotification('Please calculate first before saving', 'error');
+                return;
+            }
+            
+            const historyEntry = {
+                id: Date.now(),
+                date: new Date().toISOString(),
+                ...currentGrainCalc
+            };
+            
+            grainHistory.unshift(historyEntry);
+            localStorage.setItem('grainHistory', JSON.stringify(grainHistory));
+            renderGrainHistory();
+            showNotification('Calculation saved to history', 'success');
+        }
+        
+        // Render Grain History Table
+        function renderGrainHistory() {
+            const tbody = document.getElementById('grainHistoryTable');
+            
+            if (grainHistory.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" class="text-center p-8 text-gray-400">No calculations saved yet</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = grainHistory.map(entry => {
+                const profitColor = entry.totalProfit >= 0 ? 'text-teal-600' : 'text-red-600';
+                const date = new Date(entry.date).toLocaleDateString();
+                
+                return `
+                    <tr class="table-row border-b border-gray-100">
+                        <td class="p-3 text-gray-700">${date}</td>
+                        <td class="p-3 text-gray-700 font-semibold">${entry.grainName}</td>
+                        <td class="p-3 text-right text-gray-700">${settings.currency}${entry.cost.toFixed(2)}</td>
+                        <td class="p-3 text-right text-gray-700">${entry.weight.toFixed(0)}</td>
+                        <td class="p-3 text-right text-gray-700">${entry.unitSize}g</td>
+                        <td class="p-3 text-right text-gray-700">${settings.currency}${entry.unitPrice.toFixed(2)}</td>
+                        <td class="p-3 text-right font-semibold ${profitColor}">${settings.currency}${entry.totalProfit.toFixed(2)}</td>
+                        <td class="p-3 text-right font-semibold ${profitColor}">${entry.profitPercent.toFixed(2)}%</td>
+                        <td class="p-3 text-center">
+                            <button onclick="loadGrainHistory(${entry.id})" class="text-purple-600 hover:text-purple-800 mr-2" title="Load">
+                                <i class="fas fa-redo"></i>
+                            </button>
+                            <button onclick="deleteGrainHistory(${entry.id})" class="text-red-600 hover:text-red-800" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        // Load History Entry
+        function loadGrainHistory(id) {
+            const entry = grainHistory.find(e => e.id === id);
+            if (entry) {
+                document.getElementById('grainName').value = entry.grainName;
+                document.getElementById('grainCost').value = entry.cost;
+                document.getElementById('grainWeight').value = entry.weight;
+                document.getElementById('grainUnitSize').value = entry.unitSize;
+                document.getElementById('grainUnitPrice').value = entry.unitPrice;
+                calculateGrainProfit();
+                showNotification('Calculation loaded', 'success');
+            }
+        }
+        
+        // Delete History Entry
+        function deleteGrainHistory(id) {
+            if (confirm('Delete this calculation from history?')) {
+                grainHistory = grainHistory.filter(e => e.id !== id);
+                localStorage.setItem('grainHistory', JSON.stringify(grainHistory));
+                renderGrainHistory();
+                showNotification('Calculation deleted', 'success');
+            }
+        }
+        
+        // Clear All History
+        function clearGrainHistory() {
+            if (confirm('Are you sure you want to clear all calculation history? This cannot be undone.')) {
+                grainHistory = [];
+                localStorage.setItem('grainHistory', JSON.stringify(grainHistory));
+                renderGrainHistory();
+                showNotification('History cleared', 'success');
+            }
+        }
+        
+        // Show Comparison Modal
+        function showGrainComparison() {
+            const cost = parseFloat(document.getElementById('grainCost').value);
+            const weight = parseFloat(document.getElementById('grainWeight').value);
+            
+            if (!cost || !weight) {
+                showNotification('Please enter cost and weight first', 'error');
+                return;
+            }
+            
+            showModal('grainComparisonModal');
+        }
+        
+        // Compare Scenarios
+        function compareScenarios() {
+            const cost = parseFloat(document.getElementById('grainCost').value);
+            const weight = parseFloat(document.getElementById('grainWeight').value);
+            
+            if (!cost || !weight) {
+                showNotification('Please enter cost and weight in main form first', 'error');
+                return;
+            }
+            
+            const scenarios = [
+                {
+                    name: 'Scenario 1',
+                    unitSize: parseFloat(document.getElementById('comp1UnitSize').value),
+                    price: parseFloat(document.getElementById('comp1Price').value),
+                    color: 'purple'
+                },
+                {
+                    name: 'Scenario 2',
+                    unitSize: parseFloat(document.getElementById('comp2UnitSize').value),
+                    price: parseFloat(document.getElementById('comp2Price').value),
+                    color: 'teal'
+                },
+                {
+                    name: 'Scenario 3',
+                    unitSize: parseFloat(document.getElementById('comp3UnitSize').value),
+                    price: parseFloat(document.getElementById('comp3Price').value),
+                    color: 'blue'
+                }
+            ];
+            
+            const results = [];
+            let bestProfit = -Infinity;
+            let bestScenario = null;
+            
+            scenarios.forEach(scenario => {
+                if (!isNaN(scenario.unitSize) && !isNaN(scenario.price) && scenario.unitSize > 0 && scenario.price > 0) {
+                    const units = weight / scenario.unitSize;
+                    const costPerUnit = cost / units;
+                    const profitPerUnit = scenario.price - costPerUnit;
+                    const totalProfit = profitPerUnit * units;
+                    const totalRevenue = cost + totalProfit;
+                    const profitPercent = (totalProfit / cost) * 100;
+                    
+                    results.push({
+                        ...scenario,
+                        units: units,
+                        revenue: totalRevenue,
+                        profit: totalProfit,
+                        margin: profitPercent
+                    });
+                    
+                    if (totalProfit > bestProfit) {
+                        bestProfit = totalProfit;
+                        bestScenario = scenario.name;
+                    }
+                }
+            });
+            
+            if (results.length === 0) {
+                showNotification('Please enter at least one scenario', 'error');
+                return;
+            }
+            
+            // Display results
+            const tbody = document.getElementById('comparisonTableBody');
+            tbody.innerHTML = results.map(r => {
+                const isBest = r.name === bestScenario;
+                const profitColor = r.profit >= 0 ? 'text-teal-600' : 'text-red-600';
+                
+                return `
+                    <tr class="border-b border-gray-100 ${isBest ? 'bg-yellow-50' : ''}">
+                        <td class="p-3 text-gray-700 font-semibold">${r.name}</td>
+                        <td class="p-3 text-right text-gray-700">${r.units.toFixed(0)}</td>
+                        <td class="p-3 text-right text-gray-700">${settings.currency}${r.revenue.toFixed(2)}</td>
+                        <td class="p-3 text-right font-semibold ${profitColor}">${settings.currency}${r.profit.toFixed(2)}</td>
+                        <td class="p-3 text-right font-semibold ${profitColor}">${r.margin.toFixed(2)}%</td>
+                        <td class="p-3 text-center">
+                            ${isBest ? '<i class="fas fa-star text-yellow-500"></i>' : '-'}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            
+            // Show insight
+            const insight = document.getElementById('comparisonInsight');
+            insight.innerHTML = `
+                <h4 class="font-bold text-purple-800 mb-2">💡 Recommendation</h4>
+                <p class="text-gray-700">${bestScenario} offers the highest profit of <strong>${settings.currency}${bestProfit.toFixed(2)}</strong>. 
+                However, consider market demand and competition when choosing your final pricing strategy.</p>
+            `;
+            
+            document.getElementById('comparisonResults').classList.remove('hidden');
+            showNotification('Comparison complete', 'success');
+        }
+        
+        // Export History to CSV
+        function exportHistoryToCSV() {
+            if (grainHistory.length === 0) {
+                showNotification('No history to export', 'error');
+                return;
+            }
+            
+            let csv = 'Date,Grain Name,Cost,Weight (g),Unit Size (g),Price per Unit,Profit,Profit %\n';
+            
+            grainHistory.forEach(entry => {
+                const date = new Date(entry.date).toLocaleDateString();
+                csv += `${date},"${entry.grainName}",${entry.cost},${entry.weight},${entry.unitSize},${entry.unitPrice},${entry.totalProfit.toFixed(2)},${entry.profitPercent.toFixed(2)}\n`;
+            });
+            
+            downloadFile(csv, `grain-calculator-history-${Date.now()}.csv`, 'text/csv');
+            showNotification('History exported to CSV', 'success');
+        }
+        
+        // Export Current Calculation to PDF
+        function exportCurrentGrainToPDF() {
+            if (!currentGrainCalc) {
+                showNotification('No calculation to export', 'error');
+                return;
+            }
+            
+            const pdfContent = `
+                <div style="padding: 20px; font-family: Arial, sans-serif;">
+                    <h1 style="color: #7C3AED; text-align: center;">${settings.businessName}</h1>
+                    <h2 style="color: #14B8A6; text-align: center;">Grain Profit Calculation Report</h2>
+                    <p style="text-align: center; color: #666;">Date: ${new Date().toLocaleDateString()}</p>
+                    <hr style="border: 1px solid #ddd; margin: 20px 0;">
+                    
+                    <h3 style="color: #7C3AED;">Grain Details</h3>
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><strong>Grain Name:</strong></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">${currentGrainCalc.grainName}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><strong>Total Cost:</strong></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">${settings.currency}${currentGrainCalc.cost.toFixed(2)}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><strong>Total Weight:</strong></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">${currentGrainCalc.weight}g</td>
+                        </tr>
+                    </table>
+                    
+                    <h3 style="color: #14B8A6;">Unit Information</h3>
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><strong>Unit Size:</strong></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">${currentGrainCalc.unitSize}g</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><strong>Total Units:</strong></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">${currentGrainCalc.units.toFixed(0)}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><strong>Cost per Unit:</strong></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">${settings.currency}${currentGrainCalc.costPerUnit.toFixed(2)}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><strong>Selling Price per Unit:</strong></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">${settings.currency}${currentGrainCalc.unitPrice.toFixed(2)}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><strong>Profit per Unit:</strong></td>
+                            <td style="padding: 8px; border: 1px solid #ddd; color: #14B8A6; font-weight: bold;">${settings.currency}${currentGrainCalc.profitPerUnit.toFixed(2)}</td>
+                        </tr>
+                    </table>
+                    
+                    <h3 style="color: #7C3AED;">Financial Summary</h3>
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><strong>Total Revenue:</strong></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">${settings.currency}${currentGrainCalc.totalRevenue.toFixed(2)}</td>
+                        </tr>
+                        <tr style="background-color: #f0f9ff;">
+                            <td style="padding: 8px; border: 1px solid #ddd;"><strong>Total Profit:</strong></td>
+                            <td style="padding: 8px; border: 1px solid #ddd; color: #14B8A6; font-weight: bold; font-size: 18px;">${settings.currency}${currentGrainCalc.totalProfit.toFixed(2)}</td>
+                        </tr>
+                        <tr style="background-color: #f0f9ff;">
+                            <td style="padding: 8px; border: 1px solid #ddd;"><strong>Profit Margin:</strong></td>
+                            <td style="padding: 8px; border: 1px solid #ddd; color: #7C3AED; font-weight: bold; font-size: 18px;">${currentGrainCalc.profitPercent.toFixed(2)}%</td>
+                        </tr>
+                    </table>
+                    
+                    <p style="text-align: center; color: #999; font-size: 12px; margin-top: 30px;">
+                        Generated by ${settings.businessName} - Business Management System
+                    </p>
+                </div>
+            `;
+            
+            const printWindow = window.open('', '', 'height=600,width=800');
+            printWindow.document.write('<html><head><title>Grain Calculation Report</title></head><body>');
+            printWindow.document.write(pdfContent);
+            printWindow.document.write('</body></html>');
+            printWindow.document.close();
+            printWindow.print();
+        }
+        
+        // Export All to PDF (simplified - opens print dialog)
+        function exportGrainToPDF() {
+            if (grainHistory.length === 0) {
+                showNotification('No history to export', 'error');
+                return;
+            }
+            
+            let tableRows = '';
+            grainHistory.forEach(entry => {
+                const date = new Date(entry.date).toLocaleDateString();
+                tableRows += `
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;">${date}</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">${entry.grainName}</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">${settings.currency}${entry.cost.toFixed(2)}</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">${entry.weight}g</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">${settings.currency}${entry.totalProfit.toFixed(2)}</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">${entry.profitPercent.toFixed(2)}%</td>
+                    </tr>
+                `;
+            });
+            
+            const pdfContent = `
+                <div style="padding: 20px; font-family: Arial, sans-serif;">
+                    <h1 style="color: #7C3AED; text-align: center;">${settings.businessName}</h1>
+                    <h2 style="color: #14B8A6; text-align: center;">Grain Calculation History Report</h2>
+                    <p style="text-align: center; color: #666;">Date: ${new Date().toLocaleDateString()}</p>
+                    <hr style="border: 1px solid #ddd; margin: 20px 0;">
+                    
+                    <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                        <thead>
+                            <tr style="background-color: #7C3AED; color: white;">
+                                <th style="padding: 10px; border: 1px solid #ddd;">Date</th>
+                                <th style="padding: 10px; border: 1px solid #ddd;">Grain</th>
+                                <th style="padding: 10px; border: 1px solid #ddd;">Cost</th>
+                                <th style="padding: 10px; border: 1px solid #ddd;">Weight</th>
+                                <th style="padding: 10px; border: 1px solid #ddd;">Profit</th>
+                                <th style="padding: 10px; border: 1px solid #ddd;">Margin %</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${tableRows}
+                        </tbody>
+                    </table>
+                    
+                    <p style="text-align: center; color: #999; font-size: 12px; margin-top: 30px;">
+                        Generated by ${settings.businessName} - Business Management System
+                    </p>
+                </div>
+            `;
+            
+            const printWindow = window.open('', '', 'height=600,width=800');
+            printWindow.document.write('<html><head><title>Grain History Report</title></head><body>');
+            printWindow.document.write(pdfContent);
+            printWindow.document.write('</body></html>');
+            printWindow.document.close();
+            printWindow.print();
         }
         
         // Save Data
