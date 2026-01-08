@@ -1122,6 +1122,8 @@
             email: ''
         };
         let cart = [];
+        let grainHistory = JSON.parse(localStorage.getItem('grainHistory')) || [];
+        let currentGrainCalc = null;
         
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
