@@ -3157,7 +3157,409 @@
         initializeApp = function() {
             initDarkMode();
             originalInitializeApp();
+            loadRawMaterialsDropdown();
+            loadProductionHistory();
+            attachProductionListeners();
         };
+        
+        // PRODUCTION MODULE FUNCTIONS
+        
+        function attachProductionListeners() {
+            const inputs = ['prod-select', 'prod-input-kg', 'prod-grams', 'prod-price'];
+            inputs.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.addEventListener('input', calcProduction);
+                }
+            });
+        }
+        
+        function loadRawMaterialsDropdown() {
+            const select = document.getElementById('prod-select');
+            if (!select) return;
+
+            select.innerHTML = '<option value="" disabled selected>Select Raw Material...</option>';
+            
+            rawMaterials.forEach(item => {
+                if(item.quantity > 0) {
+                    const option = document.createElement('option');
+                    option.value = item.id;
+                    option.dataset.costPerKg = item.costPerUnit.toFixed(2);
+                    option.dataset.name = item.name;
+                    option.textContent = `${item.name} (Stock: ${item.quantity}kg)`;
+                    select.appendChild(option);
+                }
+            });
+        }
+        
+        function calcProduction() {
+            const select = document.getElementById('prod-select');
+            const inputKg = parseFloat(document.getElementById('prod-input-kg').value) || 0;
+            const gramsPerPkt = parseFloat(document.getElementById('prod-grams').value) || 0;
+            const sellingPrice = parseFloat(document.getElementById('prod-price').value) || 0;
+            const previewDiv = document.getElementById('prod-preview');
+
+            if (select.selectedIndex <= 0 || inputKg <= 0 || gramsPerPkt <= 0) {
+                previewDiv.classList.add('hidden');
+                productionState.calculated = false;
+                return;
+            }
+
+            const selectedOption = select.options[select.selectedIndex];
+            const costPerKg = parseFloat(selectedOption.dataset.costPerKg);
+            const materialName = selectedOption.dataset.name;
+
+            const totalRawCost = inputKg * costPerKg;
+            const totalUnits = Math.floor((inputKg * 1000) / gramsPerPkt);
+            
+            if (totalUnits === 0) return;
+
+            const cpu = totalRawCost / totalUnits;
+            const ppu = sellingPrice - cpu;
+            const totalProfit = ppu * totalUnits;
+            const margin = sellingPrice > 0 ? ((ppu / sellingPrice) * 100) : 0;
+
+            document.getElementById('res-units').innerText = totalUnits;
+            document.getElementById('res-cpu').innerText = cpu.toFixed(2);
+            document.getElementById('res-ppu').innerText = ppu.toFixed(2);
+            document.getElementById('res-total-profit').innerText = totalProfit.toFixed(2);
+            
+            const marginEl = document.getElementById('res-margin');
+            marginEl.innerText = margin.toFixed(1);
+
+            previewDiv.classList.remove('hidden');
+            
+            productionState = {
+                materialId: select.value,
+                materialName: materialName,
+                usedKg: inputKg,
+                grams: gramsPerPkt,
+                units: totalUnits,
+                unitCost: cpu,
+                unitPrice: sellingPrice,
+                calculated: true
+            };
+        }
+        
+        function commitProduction() {
+            if (!productionState.calculated) return;
+
+            if (!confirm(`Confirm production of ${productionState.units} packets of ${productionState.materialName}? This will deduct ${productionState.usedKg}kg from inventory.`)) return;
+
+            const matIndex = rawMaterials.findIndex(m => m.id == productionState.materialId);
+            if (matIndex === -1) {
+                showToast("Error: Material not found", 'error');
+                return;
+            }
+
+            if (rawMaterials[matIndex].quantity < productionState.usedKg) {
+                showToast("Error: Insufficient stock!", 'error');
+                return;
+            }
+
+            rawMaterials[matIndex].quantity -= productionState.usedKg;
+
+            const productName = `${productionState.materialName} ${productionState.grams}g`;
+            const existingProductIndex = finishedGoods.findIndex(p => p.name === productName);
+
+            if (existingProductIndex > -1) {
+                finishedGoods[existingProductIndex].quantity += productionState.units;
+                finishedGoods[existingProductIndex].sellingPrice = productionState.unitPrice;
+            } else {
+                finishedGoods.push({
+                    id: Date.now(),
+                    name: productName,
+                    quantity: productionState.units,
+                    unit: productionState.grams + 'g',
+                    costPerUnit: productionState.unitCost,
+                    sellingPrice: productionState.unitPrice,
+                    minStock: 10
+                });
+            }
+
+            productionHistory.unshift({
+                id: Date.now(),
+                date: new Date().toISOString(),
+                details: `${productionState.units}x ${productName}`,
+                profit: (productionState.unitPrice - productionState.unitCost) * productionState.units,
+                rawUsed: `${productionState.usedKg}kg ${productionState.materialName}`
+            });
+
+            saveData();
+            
+            document.getElementById('prod-input-kg').value = '';
+            document.getElementById('prod-grams').value = '';
+            document.getElementById('prod-price').value = '';
+            document.getElementById('prod-preview').classList.add('hidden');
+            
+            loadRawMaterialsDropdown();
+            loadProductionHistory();
+            renderRawMaterials();
+            renderFinishedGoods();
+            updateDashboard();
+            populateSelects();
+            
+            showToast("Production Batch Successful!", 'success');
+        }
+        
+        function loadProductionHistory() {
+            const list = document.getElementById('prod-list');
+            if(!list) return;
+            
+            list.innerHTML = '';
+
+            if (productionHistory.length === 0) {
+                list.innerHTML = '<div class="text-center py-8 text-slate-400 text-sm italic">No production runs recorded yet.</div>';
+                return;
+            }
+
+            productionHistory.slice(0, 10).forEach(run => {
+                const date = new Date(run.date).toLocaleDateString();
+                const html = `
+                    <div class="bg-white dark:bg-slate-800 p-4 rounded-lg border border-slate-200 dark:border-slate-700 flex justify-between items-center shadow-sm">
+                        <div>
+                            <div class="font-bold text-slate-700 dark:text-slate-200 text-sm">${run.details}</div>
+                            <div class="text-[10px] text-slate-400">Used: ${run.rawUsed} • ${date}</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-emerald-500 font-bold text-sm">+₹${run.profit.toFixed(0)}</div>
+                            <div class="text-[10px] text-slate-400">Est. Profit</div>
+                        </div>
+                    </div>
+                `;
+                list.innerHTML += html;
+            });
+        }
+        
+        function clearProductionHistory() {
+            if(confirm("Clear all production logs?")) {
+                productionHistory = [];
+                localStorage.setItem('productionHistory', JSON.stringify(productionHistory));
+                loadProductionHistory();
+                showToast('Production history cleared', 'success');
+            }
+        }
+        
+        // ADVANCED ANALYTICS FUNCTIONS
+        
+        let salesTrendChart = null;
+        let productRevenueChart = null;
+        
+        function refreshAnalytics() {
+            calculateAnalytics();
+            renderAnalyticsCharts();
+            showToast('Analytics refreshed', 'success');
+        }
+        
+        function calculateAnalytics() {
+            // Total Revenue & Profit
+            const totalRevenue = sales.reduce((sum, sale) => sum + sale.total, 0);
+            const totalProfit = sales.reduce((sum, sale) => sum + sale.profit, 0);
+            const profitMargin = totalRevenue > 0 ? ((totalProfit / totalRevenue) * 100) : 0;
+            
+            document.getElementById('an-total-revenue').textContent = totalRevenue.toFixed(0);
+            document.getElementById('an-total-profit').textContent = totalProfit.toFixed(0);
+            document.getElementById('an-profit-margin').textContent = profitMargin.toFixed(1);
+            
+            // Average Sale Value
+            const avgSale = sales.length > 0 ? (totalRevenue / sales.length) : 0;
+            document.getElementById('an-avg-sale').textContent = avgSale.toFixed(0);
+            document.getElementById('an-total-sales').textContent = sales.length;
+            
+            // Customer Analytics
+            const activeCustomers = customers.filter(c => c.totalPurchases > 0).length;
+            document.getElementById('an-active-customers').textContent = activeCustomers;
+            document.getElementById('an-total-customers').textContent = customers.length;
+            
+            // Top Customer
+            const topCustomer = customers.sort((a, b) => b.totalPurchases - a.totalPurchases)[0];
+            document.getElementById('an-top-customer').textContent = topCustomer ? topCustomer.name : '-';
+            
+            // Customer Lifetime Value
+            const clv = customers.length > 0 ? (totalRevenue / customers.length) : 0;
+            document.getElementById('an-clv').textContent = clv.toFixed(0);
+            
+            // Repeat Customer Rate
+            const customersWithMultipleSales = customers.filter(c => {
+                const customerSales = sales.filter(s => s.customerId === c.id);
+                return customerSales.length > 1;
+            }).length;
+            const repeatRate = customers.length > 0 ? ((customersWithMultipleSales / customers.length) * 100) : 0;
+            document.getElementById('an-repeat-rate').textContent = repeatRate.toFixed(1);
+            
+            // Avg Customer Value
+            const avgCustomerValue = activeCustomers > 0 ? (totalRevenue / activeCustomers) : 0;
+            document.getElementById('an-avg-customer-value').textContent = avgCustomerValue.toFixed(0);
+            
+            // Inventory Analytics
+            const rawValue = rawMaterials.reduce((sum, m) => sum + (m.quantity * m.costPerUnit), 0);
+            const finishedValue = finishedGoods.reduce((sum, g) => sum + (g.quantity * g.costPerUnit), 0);
+            const totalItems = rawMaterials.length + finishedGoods.length;
+            
+            document.getElementById('an-raw-value').textContent = rawValue.toFixed(0);
+            document.getElementById('an-finished-value').textContent = finishedValue.toFixed(0);
+            document.getElementById('an-total-items').textContent = totalItems;
+            document.getElementById('an-total-inventory').textContent = (rawValue + finishedValue).toFixed(0);
+            
+            // Production Analytics
+            const prodRuns = productionHistory.length;
+            const unitsProduced = productionHistory.reduce((sum, p) => {
+                const units = parseInt(p.details.match(/\d+/)[0]) || 0;
+                return sum + units;
+            }, 0);
+            const prodProfit = productionHistory.reduce((sum, p) => sum + p.profit, 0);
+            const avgProdProfit = prodRuns > 0 ? (prodProfit / prodRuns) : 0;
+            
+            document.getElementById('an-prod-runs').textContent = prodRuns;
+            document.getElementById('an-units-produced').textContent = unitsProduced;
+            document.getElementById('an-prod-profit').textContent = prodProfit.toFixed(0);
+            document.getElementById('an-avg-prod-profit').textContent = avgProdProfit.toFixed(0);
+            
+            // Growth Metrics
+            const now = new Date();
+            const thisMonthSales = sales.filter(s => {
+                const saleDate = new Date(s.date);
+                return saleDate.getMonth() === now.getMonth() && saleDate.getFullYear() === now.getFullYear();
+            });
+            const lastMonthSales = sales.filter(s => {
+                const saleDate = new Date(s.date);
+                const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1);
+                return saleDate.getMonth() === lastMonth.getMonth() && saleDate.getFullYear() === lastMonth.getFullYear();
+            });
+            
+            const thisMonthRevenue = thisMonthSales.reduce((sum, s) => sum + s.total, 0);
+            const lastMonthRevenue = lastMonthSales.reduce((sum, s) => sum + s.total, 0);
+            const growthRate = lastMonthRevenue > 0 ? (((thisMonthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100) : 0;
+            
+            const growthEl = document.getElementById('an-month-growth');
+            growthEl.textContent = (growthRate >= 0 ? '+' : '') + growthRate.toFixed(1) + '%';
+            growthEl.className = growthRate >= 0 ? 'text-3xl font-bold text-teal-600' : 'text-3xl font-bold text-red-600';
+            
+            // Best Performing Day
+            const salesByDate = {};
+            sales.forEach(sale => {
+                const date = new Date(sale.date).toLocaleDateString();
+                salesByDate[date] = (salesByDate[date] || 0) + sale.total;
+            });
+            let bestDay = '-';
+            let bestDayRevenue = 0;
+            Object.keys(salesByDate).forEach(date => {
+                if (salesByDate[date] > bestDayRevenue) {
+                    bestDayRevenue = salesByDate[date];
+                    bestDay = date;
+                }
+            });
+            document.getElementById('an-best-day').textContent = bestDay;
+            document.getElementById('an-best-day-revenue').textContent = bestDayRevenue.toFixed(0);
+            
+            // Inventory Turnover
+            const avgInventoryValue = (rawValue + finishedValue) / 2;
+            const turnover = avgInventoryValue > 0 ? (totalRevenue / avgInventoryValue) : 0;
+            document.getElementById('an-turnover').textContent = turnover.toFixed(1);
+        }
+        
+        function renderAnalyticsCharts() {
+            // Sales Trend Chart
+            const last30Days = [];
+            const salesByDay = {};
+            
+            for (let i = 29; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                const dateStr = date.toLocaleDateString();
+                last30Days.push(dateStr);
+                salesByDay[dateStr] = 0;
+            }
+            
+            sales.forEach(sale => {
+                const saleDate = new Date(sale.date).toLocaleDateString();
+                if (salesByDay.hasOwnProperty(saleDate)) {
+                    salesByDay[saleDate] += sale.total;
+                }
+            });
+            
+            const salesData = last30Days.map(date => salesByDay[date]);
+            
+            if (salesTrendChart) salesTrendChart.destroy();
+            
+            const ctx1 = document.getElementById('salesTrendChart');
+            if (ctx1) {
+                salesTrendChart = new Chart(ctx1, {
+                    type: 'line',
+                    data: {
+                        labels: last30Days.map((date, i) => i % 5 === 0 ? date : ''),
+                        datasets: [{
+                            label: 'Daily Revenue',
+                            data: salesData,
+                            borderColor: '#7C3AED',
+                            backgroundColor: 'rgba(124, 58, 237, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            y: { beginAtZero: true }
+                        }
+                    }
+                });
+            }
+            
+            // Product Revenue Chart
+            const productRevenue = {};
+            sales.forEach(sale => {
+                sale.items.forEach(item => {
+                    productRevenue[item.name] = (productRevenue[item.name] || 0) + (item.quantity * item.price);
+                });
+            });
+            
+            const topProducts = Object.entries(productRevenue)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5);
+            
+            if (productRevenueChart) productRevenueChart.destroy();
+            
+            const ctx2 = document.getElementById('productRevenueChart');
+            if (ctx2 && topProducts.length > 0) {
+                productRevenueChart = new Chart(ctx2, {
+                    type: 'bar',
+                    data: {
+                        labels: topProducts.map(p => p[0]),
+                        datasets: [{
+                            label: 'Revenue',
+                            data: topProducts.map(p => p[1]),
+                            backgroundColor: ['#7C3AED', '#14B8A6', '#3B82F6', '#F59E0B', '#EF4444']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            y: { beginAtZero: true }
+                        }
+                    }
+                });
+            }
+        }
+        
+        // Add analytics initialization
+        document.addEventListener('DOMContentLoaded', function() {
+            // Delay analytics rendering to ensure DOM is ready
+            setTimeout(() => {
+                if (document.getElementById('analysis')) {
+                    calculateAnalytics();
+                    renderAnalyticsCharts();
+                }
+            }, 1000);
+        });
         
         // Save Data
         function saveData() {
