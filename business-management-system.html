@@ -221,13 +221,16 @@
         <!-- Dashboard Tab -->
         <div id="dashboard" class="tab-content active">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-3xl font-bold text-gray-800">Dashboard</h2>
-                <div class="space-x-2">
+                <h2 class="text-3xl font-bold text-gray-800 dark:text-white">Dashboard</h2>
+                <div class="flex items-center space-x-2">
                     <button onclick="showTab('billing')" class="btn-primary text-white px-4 py-2 rounded-lg">
                         <i class="fas fa-plus mr-2"></i>New Sale
                     </button>
                     <button onclick="showTab('raw-materials')" class="btn-secondary text-white px-4 py-2 rounded-lg">
                         <i class="fas fa-box mr-2"></i>Add Stock
+                    </button>
+                    <button onclick="document.getElementById('pin-screen').classList.remove('hidden')" class="bg-white dark:bg-slate-800 text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-slate-600 px-4 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition">
+                        <i class="fas fa-lock"></i>
                     </button>
                 </div>
             </div>
