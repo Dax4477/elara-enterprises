@@ -349,13 +349,25 @@
         <!-- Dashboard Tab -->
         <div id="dashboard" class="tab-content active">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-3xl font-bold text-gray-800 dark:text-white">Dashboard</h2>
+                <div>
+                    <h2 class="text-3xl font-bold text-gray-800 dark:text-white flex items-center gap-3">
+                        Dashboard
+                        <button onclick="openActivityFeed()" class="relative">
+                            <i class="fas fa-bell text-gray-400 hover:text-purple-600 text-xl transition"></i>
+                            <span id="dash-notification-badge" class="notification-badge hidden">0</span>
+                        </button>
+                    </h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Welcome back! Here's what's happening today.</p>
+                </div>
                 <div class="flex items-center space-x-2">
                     <button onclick="showTab('billing')" class="btn-primary text-white px-4 py-2 rounded-lg">
                         <i class="fas fa-plus mr-2"></i>New Sale
                     </button>
-                    <button onclick="showTab('raw-materials')" class="btn-secondary text-white px-4 py-2 rounded-lg">
+                    <button onclick="showTab('raw-materials')" class="btn-secondary text-white px-4 py-2 rounded-lg hidden md:flex">
                         <i class="fas fa-box mr-2"></i>Add Stock
+                    </button>
+                    <button onclick="exportAllData()" class="bg-white dark:bg-slate-800 text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-slate-600 px-4 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition hidden md:block">
+                        <i class="fas fa-download"></i>
                     </button>
                     <button onclick="document.getElementById('pin-screen').classList.remove('hidden')" class="bg-white dark:bg-slate-800 text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-slate-600 px-4 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition">
                         <i class="fas fa-lock"></i>
@@ -363,54 +375,63 @@
                 </div>
             </div>
             
-            <!-- Stats Cards -->
+            <!-- Quick Stats Row with Better Design -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <div class="card stat-card p-6">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-gray-500 text-sm font-medium">Total Revenue</p>
-                            <h3 class="text-3xl font-bold text-purple-600 mt-2" id="totalRevenue">₹0</h3>
+                <div class="card p-6 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/30 border-l-4 border-purple-600 hover:shadow-xl transition-all cursor-pointer" onclick="showTab('analysis')">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="bg-purple-600 p-3 rounded-xl shadow-lg">
+                            <i class="fas fa-rupee-sign text-white text-xl"></i>
                         </div>
-                        <div class="bg-purple-100 p-3 rounded-full">
-                            <i class="fas fa-rupee-sign text-purple-600 text-2xl"></i>
-                        </div>
+                        <span class="text-xs font-bold text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/50 px-2 py-1 rounded-full">ALL TIME</span>
                     </div>
+                    <p class="text-xs font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wide">Total Revenue</p>
+                    <h3 class="text-3xl font-bold text-gray-800 dark:text-white mt-2" id="totalRevenue">₹0</h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-2 flex items-center gap-1">
+                        <i class="fas fa-arrow-up text-green-500"></i>
+                        <span id="revenue-growth">+0%</span> from last month
+                    </p>
                 </div>
                 
-                <div class="card p-6" style="background: linear-gradient(135deg, rgba(20, 184, 166, 0.05) 0%, rgba(45, 212, 191, 0.05) 100%); border-left: 4px solid #14B8A6;">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-gray-500 text-sm font-medium">Total Profit</p>
-                            <h3 class="text-3xl font-bold text-teal-600 mt-2" id="totalProfit">₹0</h3>
+                <div class="card p-6 bg-gradient-to-br from-teal-50 to-teal-100 dark:from-teal-900/30 dark:to-teal-800/30 border-l-4 border-teal-600 hover:shadow-xl transition-all cursor-pointer" onclick="showTab('analysis')">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="bg-teal-600 p-3 rounded-xl shadow-lg">
+                            <i class="fas fa-chart-line text-white text-xl"></i>
                         </div>
-                        <div class="bg-teal-100 p-3 rounded-full">
-                            <i class="fas fa-chart-line text-teal-600 text-2xl"></i>
-                        </div>
+                        <span class="text-xs font-bold text-teal-600 dark:text-teal-400 bg-teal-100 dark:bg-teal-900/50 px-2 py-1 rounded-full">PROFIT</span>
                     </div>
+                    <p class="text-xs font-bold text-teal-600 dark:text-teal-400 uppercase tracking-wide">Total Profit</p>
+                    <h3 class="text-3xl font-bold text-gray-800 dark:text-white mt-2" id="totalProfit">₹0</h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                        Margin: <span class="font-bold text-teal-600" id="profit-margin-dash">0%</span>
+                    </p>
                 </div>
                 
-                <div class="card p-6" style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.05) 0%, rgba(248, 113, 113, 0.05) 100%); border-left: 4px solid #EF4444;">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-gray-500 text-sm font-medium">Low Stock Alerts</p>
-                            <h3 class="text-3xl font-bold text-red-600 mt-2" id="lowStockCount">0</h3>
+                <div class="card p-6 bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/30 dark:to-red-800/30 border-l-4 border-red-600 hover:shadow-xl transition-all cursor-pointer" onclick="showTab('raw-materials')">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="bg-red-600 p-3 rounded-xl shadow-lg">
+                            <i class="fas fa-exclamation-triangle text-white text-xl"></i>
                         </div>
-                        <div class="bg-red-100 p-3 rounded-full">
-                            <i class="fas fa-exclamation-triangle text-red-600 text-2xl"></i>
-                        </div>
+                        <span class="text-xs font-bold text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/50 px-2 py-1 rounded-full">URGENT</span>
                     </div>
+                    <p class="text-xs font-bold text-red-600 dark:text-red-400 uppercase tracking-wide">Low Stock Alerts</p>
+                    <h3 class="text-3xl font-bold text-gray-800 dark:text-white mt-2" id="lowStockCount">0</h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                        Items need restock
+                    </p>
                 </div>
                 
-                <div class="card p-6" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(96, 165, 250, 0.05) 100%); border-left: 4px solid #3B82F6;">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-gray-500 text-sm font-medium">Active Products</p>
-                            <h3 class="text-3xl font-bold text-blue-600 mt-2" id="activeProducts">0</h3>
+                <div class="card p-6 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 border-l-4 border-blue-600 hover:shadow-xl transition-all cursor-pointer" onclick="showTab('finished-goods')">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="bg-blue-600 p-3 rounded-xl shadow-lg">
+                            <i class="fas fa-box-open text-white text-xl"></i>
                         </div>
-                        <div class="bg-blue-100 p-3 rounded-full">
-                            <i class="fas fa-box-open text-blue-600 text-2xl"></i>
-                        </div>
+                        <span class="text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/50 px-2 py-1 rounded-full">ACTIVE</span>
                     </div>
+                    <p class="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wide">Active Products</p>
+                    <h3 class="text-3xl font-bold text-gray-800 dark:text-white mt-2" id="activeProducts">0</h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                        In stock products
+                    </p>
                 </div>
             </div>
             
