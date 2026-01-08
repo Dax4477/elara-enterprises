@@ -3697,7 +3697,288 @@
                     renderAnalyticsCharts();
                 }
             }, 1000);
+            
+            // Initialize keyboard shortcuts
+            initKeyboardShortcuts();
+            
+            // Initialize activity feed
+            loadActivityFeed();
         });
+        
+        // QUICK SEARCH & COMMAND PALETTE
+        function openQuickSearch() {
+            const modal = document.getElementById('quick-search-modal');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                document.getElementById('quick-search-input').focus();
+            }, 100);
+        }
+        
+        function closeQuickSearch() {
+            document.getElementById('quick-search-modal').classList.add('hidden');
+            document.getElementById('quick-search-input').value = '';
+            document.getElementById('quick-search-results').innerHTML = '';
+        }
+        
+        function performQuickSearch(query) {
+            if (!query || query.length < 2) {
+                document.getElementById('quick-search-results').innerHTML = '';
+                return;
+            }
+            
+            const results = [];
+            query = query.toLowerCase();
+            
+            // Search in Finished Goods
+            finishedGoods.forEach(item => {
+                if (item.name.toLowerCase().includes(query)) {
+                    results.push({
+                        type: 'product',
+                        icon: 'box',
+                        name: item.name,
+                        info: `Stock: ${item.quantity} | Price: ${settings.currency}${item.sellingPrice}`,
+                        action: () => { showTab('finished-goods'); closeQuickSearch(); }
+                    });
+                }
+            });
+            
+            // Search in Customers
+            customers.forEach(customer => {
+                if (customer.name.toLowerCase().includes(query) || customer.phone.includes(query)) {
+                    results.push({
+                        type: 'customer',
+                        icon: 'user',
+                        name: customer.name,
+                        info: `${customer.phone} | Purchases: ${settings.currency}${customer.totalPurchases.toFixed(0)}`,
+                        action: () => { showTab('customers'); closeQuickSearch(); }
+                    });
+                }
+            });
+            
+            // Search in Sales
+            sales.forEach(sale => {
+                const customer = customers.find(c => c.id === sale.customerId);
+                const invoiceNum = `INV-${sale.id}`;
+                if (invoiceNum.includes(query)) {
+                    results.push({
+                        type: 'sale',
+                        icon: 'receipt',
+                        name: invoiceNum,
+                        info: `${customer ? customer.name : 'Walk-in'} | ${settings.currency}${sale.total.toFixed(2)}`,
+                        action: () => { showTab('reports'); closeQuickSearch(); }
+                    });
+                }
+            });
+            
+            // Render results
+            const resultsDiv = document.getElementById('quick-search-results');
+            if (results.length === 0) {
+                resultsDiv.innerHTML = '<div class="p-8 text-center text-gray-400">No results found</div>';
+                return;
+            }
+            
+            resultsDiv.innerHTML = results.slice(0, 10).map((result, index) => `
+                <button onclick="quickSearchResults[${index}].action()" class="w-full text-left p-3 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg flex items-center gap-3 transition">
+                    <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-${result.icon} text-purple-600"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="font-semibold text-gray-800 dark:text-white">${result.name}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">${result.info}</p>
+                    </div>
+                    <i class="fas fa-arrow-right text-gray-400"></i>
+                </button>
+            `).join('');
+            
+            // Store results for click handlers
+            window.quickSearchResults = results;
+        }
+        
+        // Activity Feed
+        function loadActivityFeed() {
+            const activities = [];
+            
+            // Recent sales
+            sales.slice(-5).reverse().forEach(sale => {
+                const customer = customers.find(c => c.id === sale.customerId);
+                activities.push({
+                    type: 'sale',
+                    icon: 'shopping-cart',
+                    color: 'green',
+                    title: 'New Sale',
+                    description: `${customer ? customer.name : 'Walk-in customer'} purchased for ${settings.currency}${sale.total.toFixed(2)}`,
+                    time: getTimeAgo(new Date(sale.date))
+                });
+            });
+            
+            // Low stock items
+            [...rawMaterials, ...finishedGoods].forEach(item => {
+                if (item.quantity <= item.minStock) {
+                    activities.push({
+                        type: 'alert',
+                        icon: 'exclamation-triangle',
+                        color: 'red',
+                        title: 'Low Stock Alert',
+                        description: `${item.name} is running low (${item.quantity} ${item.unit || 'kg'} remaining)`,
+                        time: 'Now'
+                    });
+                }
+            });
+            
+            // Sort by importance
+            activities.sort((a, b) => a.type === 'alert' ? -1 : 1);
+            
+            // Update notification badge
+            const alertCount = activities.filter(a => a.type === 'alert').length;
+            const badges = document.querySelectorAll('#notification-badge, #dash-notification-badge');
+            badges.forEach(badge => {
+                if (alertCount > 0) {
+                    badge.textContent = alertCount;
+                    badge.classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
+                }
+            });
+            
+            // Render activity feed
+            const activityList = document.getElementById('activity-list');
+            if (activityList) {
+                if (activities.length === 0) {
+                    activityList.innerHTML = '<div class="text-center py-8 text-gray-400">No recent activity</div>';
+                } else {
+                    activityList.innerHTML = activities.slice(0, 20).map(activity => `
+                        <div class="bg-gray-50 dark:bg-slate-900 p-3 rounded-lg border border-gray-200 dark:border-slate-700">
+                            <div class="flex items-start gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-${activity.color}-100 dark:bg-${activity.color}-900/30 flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-${activity.icon} text-${activity.color}-600 text-sm"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="font-semibold text-sm text-gray-800 dark:text-white">${activity.title}</p>
+                                    <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">${activity.description}</p>
+                                    <p class="text-xs text-gray-400 mt-1">${activity.time}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            }
+        }
+        
+        function openActivityFeed() {
+            document.getElementById('activity-feed').classList.remove('hidden');
+            loadActivityFeed();
+        }
+        
+        function closeActivityFeed() {
+            document.getElementById('activity-feed').classList.add('hidden');
+        }
+        
+        function getTimeAgo(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
+            const intervals = {
+                year: 31536000,
+                month: 2592000,
+                week: 604800,
+                day: 86400,
+                hour: 3600,
+                minute: 60
+            };
+            
+            for (const [unit, secondsInUnit] of Object.entries(intervals)) {
+                const interval = Math.floor(seconds / secondsInUnit);
+                if (interval >= 1) {
+                    return `${interval} ${unit}${interval > 1 ? 's' : ''} ago`;
+                }
+            }
+            return 'Just now';
+        }
+        
+        // Quick Actions Menu
+        function toggleQuickActions() {
+            const menu = document.getElementById('quick-actions-menu');
+            menu.classList.toggle('hidden');
+        }
+        
+        // Keyboard Shortcuts
+        function initKeyboardShortcuts() {
+            document.addEventListener('keydown', (e) => {
+                // Cmd/Ctrl + K for quick search
+                if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                    e.preventDefault();
+                    openQuickSearch();
+                }
+                
+                // Escape to close modals
+                if (e.key === 'Escape') {
+                    closeQuickSearch();
+                    closeActivityFeed();
+                    const quickActionsMenu = document.getElementById('quick-actions-menu');
+                    if (!quickActionsMenu.classList.contains('hidden')) {
+                        quickActionsMenu.classList.add('hidden');
+                    }
+                }
+                
+                // Cmd/Ctrl + N for new sale
+                if ((e.metaKey || e.ctrlKey) && e.key === 'n') {
+                    e.preventDefault();
+                    showTab('billing');
+                }
+                
+                // Cmd/Ctrl + B for backup
+                if ((e.metaKey || e.ctrlKey) && e.key === 'b') {
+                    e.preventDefault();
+                    exportAllData();
+                }
+            });
+            
+            // Quick search input handler
+            const searchInput = document.getElementById('quick-search-input');
+            if (searchInput) {
+                searchInput.addEventListener('input', (e) => {
+                    performQuickSearch(e.target.value);
+                });
+            }
+        }
+        
+        // Enhanced updateDashboard with growth metrics
+        const originalUpdateDashboard = updateDashboard;
+        updateDashboard = function() {
+            originalUpdateDashboard();
+            
+            // Calculate growth
+            const now = new Date();
+            const thisMonth = sales.filter(s => {
+                const saleDate = new Date(s.date);
+                return saleDate.getMonth() === now.getMonth() && saleDate.getFullYear() === now.getFullYear();
+            });
+            const lastMonth = sales.filter(s => {
+                const saleDate = new Date(s.date);
+                const lastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1);
+                return saleDate.getMonth() === lastMonthDate.getMonth() && saleDate.getFullYear() === lastMonthDate.getFullYear();
+            });
+            
+            const thisMonthRevenue = thisMonth.reduce((sum, s) => sum + s.total, 0);
+            const lastMonthRevenue = lastMonth.reduce((sum, s) => sum + s.total, 0);
+            const growth = lastMonthRevenue > 0 ? (((thisMonthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100) : 0;
+            
+            const growthEl = document.getElementById('revenue-growth');
+            if (growthEl) {
+                growthEl.textContent = (growth >= 0 ? '+' : '') + growth.toFixed(1) + '%';
+                growthEl.parentElement.querySelector('i').className = growth >= 0 ? 'fas fa-arrow-up text-green-500' : 'fas fa-arrow-down text-red-500';
+            }
+            
+            // Profit margin
+            const totalRevenue = sales.reduce((sum, sale) => sum + sale.total, 0);
+            const totalProfit = sales.reduce((sum, sale) => sum + sale.profit, 0);
+            const margin = totalRevenue > 0 ? ((totalProfit / totalRevenue) * 100) : 0;
+            const marginEl = document.getElementById('profit-margin-dash');
+            if (marginEl) {
+                marginEl.textContent = margin.toFixed(1) + '%';
+            }
+            
+            // Update activity feed
+            loadActivityFeed();
+        };
         
         // Save Data
         function saveData() {
