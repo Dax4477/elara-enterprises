@@ -1464,7 +1464,13 @@
         };
         let cart = [];
         let grainHistory = JSON.parse(localStorage.getItem('grainHistory')) || [];
+        let productionHistory = JSON.parse(localStorage.getItem('productionHistory')) || [];
         let currentGrainCalc = null;
+        let productionState = {
+            selectedMaterialId: null,
+            selectedMaterialCostPerKg: 0,
+            calculated: false
+        };
         
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
