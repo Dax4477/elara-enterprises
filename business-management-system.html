@@ -2669,6 +2669,223 @@
             printWindow.print();
         }
         
+        // Dark Mode Toggle
+        function toggleDarkMode() {
+            const html = document.documentElement;
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                localStorage.setItem('darkMode', 'light');
+                showToast('Light mode activated');
+            } else {
+                html.classList.add('dark');
+                localStorage.setItem('darkMode', 'dark');
+                showToast('Dark mode activated');
+            }
+        }
+        
+        // Initialize Dark Mode
+        function initDarkMode() {
+            const darkMode = localStorage.getItem('darkMode');
+            if (darkMode === 'dark') {
+                document.documentElement.classList.add('dark');
+            }
+        }
+        
+        // PIN Lock Functions
+        function checkPin() {
+            const pin = document.getElementById('login-pin').value;
+            const storedPin = localStorage.getItem('systemPIN') || '1234';
+            
+            if (pin === storedPin) {
+                document.getElementById('pin-screen').classList.add('hidden');
+                document.getElementById('pin-error').classList.add('hidden');
+                document.getElementById('login-pin').value = '';
+                showToast('System unlocked successfully');
+            } else {
+                document.getElementById('pin-error').classList.remove('hidden');
+                document.getElementById('login-pin').value = '';
+            }
+        }
+        
+        function changePIN() {
+            const currentPin = prompt('Enter current PIN (default: 1234):');
+            const storedPin = localStorage.getItem('systemPIN') || '1234';
+            
+            if (currentPin === storedPin) {
+                const newPin = prompt('Enter new 4-digit PIN:');
+                if (newPin && newPin.length === 4 && /^\d{4}$/.test(newPin)) {
+                    localStorage.setItem('systemPIN', newPin);
+                    showToast('PIN changed successfully', 'success');
+                } else {
+                    showToast('Invalid PIN format. Must be 4 digits', 'error');
+                }
+            } else {
+                showToast('Incorrect current PIN', 'error');
+            }
+        }
+        
+        // Allow Enter key for PIN
+        document.addEventListener('DOMContentLoaded', function() {
+            const pinInput = document.getElementById('login-pin');
+            if (pinInput) {
+                pinInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        checkPin();
+                    }
+                });
+            }
+        });
+        
+        // Toast Notification
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-msg');
+            const icon = toast.querySelector('i');
+            
+            toastMsg.textContent = message;
+            
+            // Change icon based on type
+            icon.className = type === 'success' ? 'fa-solid fa-circle-check text-teal-400' : 'fa-solid fa-exclamation-circle text-red-400';
+            
+            // Show toast
+            toast.style.transform = 'translateY(0)';
+            
+            // Hide after 3 seconds
+            setTimeout(() => {
+                toast.style.transform = 'translateY(8rem)';
+            }, 3000);
+        }
+        
+        // Backup & Restore Functions
+        function restoreData(input) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    
+                    // Validate data structure
+                    if (data.rawMaterials) rawMaterials = data.rawMaterials;
+                    if (data.finishedGoods) finishedGoods = data.finishedGoods;
+                    if (data.customers) customers = data.customers;
+                    if (data.sales) sales = data.sales;
+                    if (data.settings) settings = data.settings;
+                    if (data.grainHistory) grainHistory = data.grainHistory;
+                    
+                    saveData();
+                    
+                    // Refresh all displays
+                    renderRawMaterials();
+                    renderFinishedGoods();
+                    renderCustomers();
+                    renderReports();
+                    renderGrainHistory();
+                    updateDashboard();
+                    populateSelects();
+                    loadSettings();
+                    
+                    showToast('Data restored successfully', 'success');
+                } catch (error) {
+                    showToast('Invalid backup file', 'error');
+                    console.error('Restore error:', error);
+                }
+            };
+            reader.readAsText(file);
+            
+            // Reset file input
+            input.value = '';
+        }
+        
+        // Export Item Sales CSV
+        function exportCSV(type) {
+            let csv = '';
+            let filename = '';
+            
+            switch(type) {
+                case 'item_sales':
+                    csv = 'Product,Units Sold,Revenue,Profit\n';
+                    const productSales = {};
+                    
+                    sales.forEach(sale => {
+                        sale.items.forEach(item => {
+                            if (!productSales[item.name]) {
+                                productSales[item.name] = { qty: 0, revenue: 0, profit: 0 };
+                            }
+                            productSales[item.name].qty += item.quantity;
+                            productSales[item.name].revenue += item.quantity * item.price;
+                            productSales[item.name].profit += item.quantity * (item.price - item.cost);
+                        });
+                    });
+                    
+                    Object.keys(productSales).forEach(product => {
+                        const data = productSales[product];
+                        csv += `${product},${data.qty},${data.revenue.toFixed(2)},${data.profit.toFixed(2)}\n`;
+                    });
+                    
+                    filename = `item-sales-${Date.now()}.csv`;
+                    break;
+                    
+                case 'sales_report':
+                    csv = 'Date,Invoice #,Customer,Items,Total,Profit\n';
+                    sales.forEach(sale => {
+                        const customer = sale.customerId ? customers.find(c => c.id === sale.customerId) : null;
+                        const customerName = customer ? customer.name : 'Walk-in';
+                        const itemCount = sale.items.reduce((sum, item) => sum + item.quantity, 0);
+                        const date = new Date(sale.date).toLocaleDateString();
+                        csv += `${date},INV-${sale.id},"${customerName}",${itemCount},${sale.total.toFixed(2)},${sale.profit.toFixed(2)}\n`;
+                    });
+                    filename = `sales-report-${Date.now()}.csv`;
+                    break;
+                    
+                case 'inventory':
+                    csv = 'Type,Item,Quantity,Unit,Cost,Selling Price,Min Stock,Status\n';
+                    
+                    rawMaterials.forEach(material => {
+                        const status = material.quantity <= material.minStock ? 'Low Stock' : 'In Stock';
+                        csv += `Raw Material,${material.name},${material.quantity},${material.unit},${material.costPerUnit},-,${material.minStock},${status}\n`;
+                    });
+                    
+                    finishedGoods.forEach(good => {
+                        const status = good.quantity <= good.minStock ? 'Low Stock' : 'In Stock';
+                        csv += `Finished Good,${good.name},${good.quantity},${good.unit},${good.costPerUnit},${good.sellingPrice},${good.minStock},${status}\n`;
+                    });
+                    
+                    filename = `inventory-${Date.now()}.csv`;
+                    break;
+                    
+                case 'transactions':
+                    csv = 'Date,Type,Customer,Amount,Payment Method,Note\n';
+                    // This would need a transactions array which isn't in current structure
+                    // Using sales data as transactions
+                    sales.forEach(sale => {
+                        const customer = sale.customerId ? customers.find(c => c.id === sale.customerId) : null;
+                        const customerName = customer ? customer.name : 'Walk-in';
+                        const date = new Date(sale.date).toLocaleDateString();
+                        csv += `${date},Sale,"${customerName}",${sale.total.toFixed(2)},Cash,-\n`;
+                    });
+                    filename = `transactions-${Date.now()}.csv`;
+                    break;
+                    
+                default:
+                    showToast('Unknown export type', 'error');
+                    return;
+            }
+            
+            if (csv) {
+                downloadFile(csv, filename, 'text/csv');
+                showToast(`${type.replace('_', ' ')} exported successfully`, 'success');
+            }
+        }
+        
+        // Initialize app with dark mode check
+        const originalInitializeApp = initializeApp;
+        initializeApp = function() {
+            initDarkMode();
+            originalInitializeApp();
+        };
+        
         // Save Data
         function saveData() {
             localStorage.setItem('rawMaterials', JSON.stringify(rawMaterials));
