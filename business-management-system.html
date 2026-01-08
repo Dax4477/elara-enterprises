@@ -932,12 +932,39 @@
                     </button>
                 </form>
                 
-                <div class="mt-8 pt-6 border-t border-gray-200">
-                    <h3 class="text-lg font-bold text-gray-800 mb-4">Data Management</h3>
+                <div class="mt-8 pt-6 border-t border-gray-200 dark:border-slate-700">
+                    <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4">Appearance</h3>
+                    <div class="flex items-center justify-between bg-white dark:bg-slate-700 p-4 rounded-lg border border-gray-200 dark:border-slate-600 mb-4">
+                        <div>
+                            <p class="font-semibold text-gray-700 dark:text-slate-300">Dark Mode</p>
+                            <p class="text-xs text-gray-500 dark:text-slate-400">Toggle dark/light theme</p>
+                        </div>
+                        <button onclick="toggleDarkMode()" class="bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300 px-4 py-2 rounded-lg hover:bg-purple-200 dark:hover:bg-purple-800 transition">
+                            <i class="fa-solid fa-circle-half-stroke"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="flex items-center justify-between bg-white dark:bg-slate-700 p-4 rounded-lg border border-gray-200 dark:border-slate-600">
+                        <div>
+                            <p class="font-semibold text-gray-700 dark:text-slate-300">PIN Lock</p>
+                            <p class="text-xs text-gray-500 dark:text-slate-400">Change security PIN (Default: 1234)</p>
+                        </div>
+                        <button onclick="changePIN()" class="bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300 px-4 py-2 rounded-lg hover:bg-purple-200 dark:hover:bg-purple-800 transition">
+                            <i class="fa-solid fa-key"></i> Change
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="mt-8 pt-6 border-t border-gray-200 dark:border-slate-700">
+                    <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4">Data Management</h3>
                     <div class="space-y-3">
                         <button onclick="exportAllData()" class="btn-secondary text-white px-4 py-2 rounded-lg w-full">
-                            <i class="fas fa-download mr-2"></i>Export All Data
+                            <i class="fas fa-download mr-2"></i>Backup All Data (JSON)
                         </button>
+                        <button onclick="document.getElementById('restore-file').click()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg w-full">
+                            <i class="fas fa-upload mr-2"></i>Restore from Backup
+                        </button>
+                        <input type="file" id="restore-file" class="hidden" accept=".json" onchange="restoreData(this)">
                         <button onclick="confirmClearData()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg w-full">
                             <i class="fas fa-trash mr-2"></i>Clear All Data
                         </button>
