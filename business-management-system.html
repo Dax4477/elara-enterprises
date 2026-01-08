@@ -514,6 +514,78 @@
             </div>
         </div>
         
+        <!-- Production Tab -->
+        <div id="production" class="tab-content space-y-6">
+            <div class="bg-slate-900 text-white p-6 rounded-2xl shadow-xl relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-orange-600/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none"></div>
+
+                <h3 class="font-bold text-xl mb-4 relative z-10 flex items-center gap-2">
+                    <i class="fa-solid fa-wand-magic-sparkles text-orange-400"></i> Smart Profit Calculator
+                </h3>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 relative z-10">
+                    <div class="col-span-2 md:col-span-1">
+                        <label class="text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-1 block">1. Raw Material</label>
+                        <select id="prod-select" class="w-full bg-slate-800 border border-slate-600 text-white p-2.5 rounded-lg outline-none focus:border-orange-500 transition-colors">
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-1 block">2. Use Kg</label>
+                        <input type="number" id="prod-input-kg" class="w-full bg-slate-800 border border-slate-600 text-white p-2.5 rounded-lg outline-none focus:border-orange-500 transition-colors font-mono" placeholder="0.00" step="0.01">
+                    </div>
+                    <div>
+                        <label class="text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-1 block">3. Grams/Pkt</label>
+                        <input type="number" id="prod-grams" class="w-full bg-slate-800 border border-slate-600 text-white p-2.5 rounded-lg outline-none focus:border-orange-500 transition-colors font-mono" placeholder="100">
+                    </div>
+                    <div>
+                        <label class="text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-1 block">4. Sell Price (₹)</label>
+                        <input type="number" id="prod-price" class="w-full bg-slate-800 border border-slate-600 text-white p-2.5 rounded-lg outline-none focus:border-orange-500 transition-colors font-mono" placeholder="0.00">
+                    </div>
+                </div>
+
+                <div id="prod-preview" class="mt-6 pt-4 border-t border-slate-700 hidden">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-4">
+                        <div class="bg-slate-800/50 p-3 rounded-lg border border-white/5">
+                            <p class="text-slate-400 text-[10px] uppercase font-bold">Total Packets</p>
+                            <p class="text-2xl font-bold text-white mt-1" id="res-units">0</p>
+                        </div>
+                        <div class="bg-slate-800/50 p-3 rounded-lg border border-white/5">
+                            <p class="text-slate-400 text-[10px] uppercase font-bold">Cost / Pkt</p>
+                            <p class="text-2xl font-bold text-red-300 mt-1">₹<span id="res-cpu">0.00</span></p>
+                        </div>
+                        <div class="bg-slate-800/50 p-3 rounded-lg border border-white/5">
+                            <p class="text-slate-400 text-[10px] uppercase font-bold">Profit / Pkt</p>
+                            <p class="text-2xl font-bold text-emerald-400 mt-1">₹<span id="res-ppu">0.00</span></p>
+                        </div>
+                        <div class="bg-slate-800/50 p-3 rounded-lg border border-white/5">
+                            <p class="text-slate-400 text-[10px] uppercase font-bold">Margin</p>
+                            <p class="text-2xl font-bold text-orange-400 mt-1"><span id="res-margin">0</span>%</p>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col md:flex-row justify-between items-end bg-slate-800 p-4 rounded-xl border border-slate-600 gap-4">
+                        <div class="space-y-1">
+                            <div class="text-xs text-slate-400 uppercase font-bold">Estimated Net Profit</div>
+                            <div class="text-3xl font-bold text-emerald-400 tracking-tight">₹<span id="res-total-profit">0.00</span></div>
+                        </div>
+                        <button onclick="commitProduction()" class="w-full md:w-auto bg-orange-600 hover:bg-orange-500 text-white font-bold py-3 px-8 rounded-lg shadow-lg hover:shadow-orange-500/20 transition-all transform active:scale-95 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-gears"></i> Run Production Batch
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <div class="flex justify-between items-end mb-4">
+                    <h4 class="font-bold text-slate-700 dark:text-slate-300 text-lg">Production History</h4>
+                    <button onclick="clearProductionHistory()" class="text-xs text-red-500 hover:text-red-600 font-bold underline">Clear History</button>
+                </div>
+                <div id="prod-list" class="space-y-3">
+                    <div class="text-center py-8 text-slate-400 text-sm italic">No production runs recorded yet.</div>
+                </div>
+            </div>
+        </div>
+        
         <!-- Billing & Sales Tab -->
         <div id="billing" class="tab-content">
             <h2 class="text-3xl font-bold text-gray-800 mb-6">Create New Sale</h2>
