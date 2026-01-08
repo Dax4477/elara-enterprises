@@ -2207,18 +2207,7 @@
         
         // Notification
         function showNotification(message, type = 'success') {
-            const notification = document.createElement('div');
-            notification.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg text-white ${
-                type === 'success' ? 'bg-teal-500' : 'bg-red-500'
-            }`;
-            notification.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} mr-2"></i>${message}`;
-            
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.style.animation = 'fadeOut 0.3s ease';
-                setTimeout(() => notification.remove(), 300);
-            }, 3000);
+            showToast(message, type);
         }
         
         // Grain Calculator Function
