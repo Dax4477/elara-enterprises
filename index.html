@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ELARA Enterprises - Premium Invoice</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #059669; 
+            --primary-hover: #047857;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --bg-body: #f3f4f6;
+            --bg-card: #ffffff;
+            --border: #e5e7eb;
+            --focus-ring: rgba(5, 150, 105, 0.2);
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            margin: 0; 
+            padding: 40px 20px; 
+            background: var(--bg-body); 
+            color: var(--text-main);
+        }
+
+        .invoice-container { 
+            max-width: 900px; 
+            margin: auto; 
+            background: var(--bg-card); 
+            padding: 50px; 
+            border-radius: 12px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05); 
+        }
+
+        /* Header & Address */
+        .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; padding-bottom: 20px; border-bottom: 2px solid var(--border); }
+        .header-left h1 { margin: 0; color: var(--primary); font-size: 28px; font-weight: 700; letter-spacing: -0.5px; }
+        .header-left h4 { margin: 4px 0 0 0; color: var(--text-muted); font-weight: 500; font-size: 15px; }
+        .company-address { margin-top: 12px; font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+        .company-address p { margin: 0; }
+        .header-right { text-align: right; }
+        .header-right h2 { margin: 0 0 10px 0; color: #d1d5db; font-size: 36px; text-transform: uppercase; font-weight: 700; letter-spacing: 2px; }
+        .meta-row { display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 14px; font-weight: 500; color: var(--text-muted); }
+        .meta-row input { width: 140px; margin: 0; }
+
+        /* Addresses */
+        .address-container { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; }
+        .address-box { background: #f9fafb; padding: 20px; border-radius: 8px; border: 1px solid var(--border); position: relative; }
+        .address-box h3 { margin-top: 0; font-size: 14px; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .checkbox-wrapper { font-size: 12px; text-transform: none; letter-spacing: normal; display: flex; align-items: center; gap: 5px; color: var(--primary); cursor: pointer; }
+        .checkbox-wrapper input { width: auto; margin: 0; cursor: pointer; }
+
+        /* Inputs & Selects */
+        input, select { width: 100%; padding: 10px 12px; margin-bottom: 12px; border: 1px solid var(--border); border-radius: 6px; font-family: 'Inter', sans-serif; font-size: 14px; color: var(--text-main); transition: all 0.2s; box-sizing: border-box; background: #fff; }
+        input:disabled, select:disabled { background: #e5e7eb; color: #9ca3af; cursor: not-allowed; }
+        input:focus:not(:disabled), select:focus:not(:disabled) { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--focus-ring); }
+
+        /* Master Toggle Switch */
+        .toggle-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: #f9fafb; padding: 10px 15px; border-radius: 8px; border: 1px solid var(--border); }
+        .toggle-container h3 { margin: 0; font-size: 15px; color: var(--text-main); }
+        .switch-wrapper { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; color: var(--text-muted); }
+        
+        .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: .3s; border-radius: 24px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        input:checked + .slider { background-color: var(--primary); }
+        input:checked + .slider:before { transform: translateX(20px); }
+        .active-label { color: var(--primary); }
+
+        /* Table */
+        table { width: 100%; border-collapse: separate; border-spacing: 0; margin-bottom: 20px; }
+        th { background-color: #f9fafb; color: var(--text-muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; padding: 12px; text-align: left; border-top: 1px solid var(--border); border-bottom: 2px solid var(--border); }
+        td { padding: 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        td input, td select { margin-bottom: 0; border: 1px solid transparent; background: transparent; }
+        td input:focus, td select:focus { background: #fff; border: 1px solid var(--primary); }
+        
+        /* New SL.NO Column Styles */
+        .sl-col { width: 40px; text-align: center !important; }
+        .sl-no { font-weight: 600; color: var(--text-muted); }
+        .amount { font-weight: 500; color: var(--text-main); }
+
+        /* Buttons */
+        .add-row-btn { background-color: #f3f4f6; color: var(--text-main); border: 1px solid var(--border); padding: 8px 16px; cursor: pointer; font-size: 13px; font-weight: 500; border-radius: 6px; transition: background 0.2s; }
+        .add-row-btn:hover { background-color: #e5e7eb; }
+
+        /* Totals */
+        .totals-wrapper { display: flex; justify-content: flex-end; margin-top: 30px; }
+        .totals-container { width: 350px; background: #f9fafb; padding: 25px; border-radius: 8px; border: 1px solid var(--border); }
+        .totals-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-size: 14px; color: var(--text-muted); }
+        .totals-row span:last-child { font-weight: 600; color: var(--text-main); }
+        .totals-row input, .totals-row select { width: 120px; margin: 0; text-align: right; padding: 6px 10px; }
+        .total-final { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding-top: 15px; border-top: 2px solid var(--border); font-size: 20px; font-weight: 700; color: var(--primary); }
+
+        .btn-print { background-color: var(--primary); color: white; border: none; padding: 14px 28px; cursor: pointer; font-size: 16px; font-weight: 600; border-radius: 8px; display: block; width: 100%; margin-top: 40px; text-align: center; transition: background 0.2s; box-shadow: 0 4px 6px rgba(5, 150, 105, 0.2); }
+        .btn-print:hover { background-color: var(--primary-hover); }
+        
+        /* PRINT STYLES */
+        @media print {
+            @page { margin: 0; } 
+            body { background: #fff; padding: 15mm; }
+            .invoice-container { box-shadow: none; padding: 0; max-width: 100%; border: none; }
+            .btn-print, .add-row-btn, .checkbox-wrapper, .toggle-container { display: none; }
+            .address-box, .totals-container { background: transparent; border: none; padding: 0; }
+            .address-box { margin-bottom: 20px; }
+            .totals-wrapper { margin-top: 20px; }
+            input, select { border: none !important; appearance: none !important; -moz-appearance: none !important; -webkit-appearance: none !important; background: transparent !important; padding: 0 !important; margin: 0 0 5px 0 !important; color: #000 !important; box-shadow: none !important; }
+            select::-ms-expand { display: none; }
+            input::placeholder { color: transparent; }
+            td { border-bottom: 1px solid #ddd !important; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="invoice-container">
+    <div class="header">
+        <div class="header-left">
+            <h1>ELARA ENTERPRISES</h1>
+            <h4>Premium Food Repackaging & Spices</h4>
+            <div class="company-address">
+                <p>Anjarakandy RD, Kadappuram</p>
+                <p>Uruvachal-670702</p>
+                <p>PH: 8547915700</p>
+            </div>
+        </div>
+        <div class="header-right">
+            <h2>Invoice</h2>
+            <div class="meta-row">
+                <span>Date:</span> <input type="date" id="invoice-date">
+            </div>
+            <div class="meta-row">
+                <span>Invoice #:</span> <input type="text" id="invoice-number" placeholder="INV-001">
+            </div>
+        </div>
+    </div>
+
+    <div class="address-container">
+        <div class="address-box">
+            <h3>Billed To</h3>
+            <input type="text" id="bill-name" placeholder="Customer / Business Name" style="font-weight: 600; font-size: 16px;">
+            <input type="text" id="bill-street" placeholder="Street Address / GSTIN">
+            <select id="bill-state">
+                <option value="">Select State</option>
+                <option value="Kerala" selected>Kerala</option>
+                <option value="Karnataka">Karnataka</option>
+                <option value="Tamil Nadu">Tamil Nadu</option>
+                <option value="Maharashtra">Maharashtra</option>
+            </select>
+        </div>
+
+        <div class="address-box">
+            <h3>
+                Shipped To
+                <label class="checkbox-wrapper">
+                    <input type="checkbox" id="same-as-billing" onchange="syncAddresses()"> Same as Billed To
+                </label>
+            </h3>
+            <input type="text" id="ship-name" placeholder="Recipient Name" style="font-weight: 600; font-size: 16px;">
+            <input type="text" id="ship-street" placeholder="Delivery Address">
+            <select id="ship-state">
+                <option value="">Select State</option>
+                <option value="Kerala" selected>Kerala</option>
+                <option value="Karnataka">Karnataka</option>
+                <option value="Tamil Nadu">Tamil Nadu</option>
+                <option value="Maharashtra">Maharashtra</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="toggle-container">
+        <h3>Invoice Items</h3>
+        <div class="switch-wrapper">
+            <span id="label-unit" class="active-label">Default: Unit/Pcs</span>
+            <label class="switch">
+                <input type="checkbox" id="master-toggle" onchange="updateMasterToggle()">
+                <span class="slider"></span>
+            </label>
+            <span id="label-board">Default: Board</span>
+        </div>
+    </div>
+
+    <table id="invoice-table">
+        <thead>
+            <tr>
+                <th class="sl-col">SL.NO</th>
+                <th>Item Description</th>
+                <th style="width: 110px; text-align: center;">Type</th>
+                <th style="width: 80px; text-align: center;">Qty</th>
+                <th style="width: 120px; text-align: right;">Rate (₹)</th>
+                <th style="width: 120px; text-align: right;">Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="sl-col sl-no">1</td>
+                <td><input type="text" placeholder="e.g., Premium Cardamom 5g"></td>
+                <td>
+                    <select class="item-type" style="text-align: center; font-weight: 600;">
+                        <option value="Unit">Unit/Pcs</option>
+                        <option value="Board">Board</option>
+                    </select>
+                </td>
+                <td><input type="number" class="qty" value="1" min="1" onchange="calculateTotals()" style="text-align: center;"></td>
+                <td><input type="number" class="rate" value="0.00" min="0" onchange="calculateTotals()" style="text-align: right;"></td>
+                <td class="amount" style="text-align: right;">0.00</td>
+            </tr>
+        </tbody>
+    </table>
+    <button class="add-row-btn" onclick="addRow()">+ Add Another Item</button>
+
+    <div class="totals-wrapper">
+        <div class="totals-container">
+            <div class="totals-row">
+                <span>Currency</span>
+                <select id="currency-select" onchange="updateCurrency()">
+                    <option value="₹" selected>INR (₹)</option>
+                    <option value="$">USD ($)</option>
+                    <option value="£">GBP (£)</option>
+                </select>
+            </div>
+            <div class="totals-row">
+                <span>Subtotal</span>
+                <span id="subtotal"><span class="cur-sym">₹</span> 0.00</span>
+            </div>
+            <div class="totals-row">
+                <span>Shipping Charges</span>
+                <input type="number" id="shipping" value="0.00" onchange="calculateTotals()">
+            </div>
+            
+            <div class="total-final">
+                <span>Total Due</span>
+                <span id="total"><span class="cur-sym">₹</span> 0.00</span>
+            </div>
+        </div>
+    </div>
+
+    <button class="btn-print" onclick="generatePDF()">Generate PDF Document</button>
+</div>
+
+<script>
+    document.getElementById('invoice-date').valueAsDate = new Date();
+
+    window.onload = function() {
+        let savedSeq = localStorage.getItem('elara_invoice_seq') || "1";
+        document.getElementById('invoice-number').value = "INV-" + savedSeq.toString().padStart(3, '0');
+    };
+
+    function syncAddresses() {
+        const isChecked = document.getElementById('same-as-billing').checked;
+        const fields = ['name', 'street', 'state'];
+        fields.forEach(field => {
+            const billField = document.getElementById('bill-' + field);
+            const shipField = document.getElementById('ship-' + field);
+            if (isChecked) {
+                shipField.value = billField.value;
+                shipField.disabled = true; 
+            } else {
+                shipField.disabled = false; 
+            }
+        });
+    }
+
+    ['bill-name', 'bill-street', 'bill-state'].forEach(id => {
+        document.getElementById(id).addEventListener('input', () => {
+            if(document.getElementById('same-as-billing').checked) syncAddresses();
+        });
+    });
+
+    function updateMasterToggle() {
+        const isBoard = document.getElementById('master-toggle').checked;
+        
+        document.getElementById('label-board').className = isBoard ? 'active-label' : '';
+        document.getElementById('label-unit').className = isBoard ? '' : 'active-label';
+
+        const rows = document.querySelectorAll("#invoice-table tbody tr");
+        rows.forEach(row => {
+            const rate = parseFloat(row.querySelector(".rate").value) || 0;
+            if (rate === 0) {
+                row.querySelector(".item-type").value = isBoard ? "Board" : "Unit";
+            }
+        });
+    }
+
+    // Update the serial numbers dynamically
+    function updateSerialNumbers() {
+        const rows = document.querySelectorAll("#invoice-table tbody tr");
+        rows.forEach((row, index) => {
+            row.querySelector(".sl-no").innerText = index + 1;
+        });
+    }
+
+    function addRow() {
+        const isBoard = document.getElementById('master-toggle').checked;
+        const defaultType = isBoard ? "Board" : "Unit";
+        const htmlOptions = isBoard 
+            ? `<option value="Unit">Unit/Pcs</option><option value="Board" selected>Board</option>`
+            : `<option value="Unit" selected>Unit/Pcs</option><option value="Board">Board</option>`;
+
+        const table = document.getElementById("invoice-table").getElementsByTagName('tbody')[0];
+        const newRow = table.insertRow();
+        newRow.innerHTML = `
+            <td class="sl-col sl-no"></td>
+            <td><input type="text" placeholder="Item description"></td>
+            <td>
+                <select class="item-type" style="text-align: center; font-weight: 600;">
+                    ${htmlOptions}
+                </select>
+            </td>
+            <td><input type="number" class="qty" value="1" min="1" onchange="calculateTotals()" style="text-align: center;"></td>
+            <td><input type="number" class="rate" value="0.00" min="0" onchange="calculateTotals()" style="text-align: right;"></td>
+            <td class="amount" style="text-align: right;">0.00</td>
+        `;
+        
+        // Refresh the serial numbers after adding a new row
+        updateSerialNumbers();
+    }
+
+    function calculateTotals() {
+        const rows = document.querySelectorAll("#invoice-table tbody tr");
+        let subtotal = 0;
+
+        rows.forEach(row => {
+            const qty = parseFloat(row.querySelector(".qty").value) || 0;
+            const rate = parseFloat(row.querySelector(".rate").value) || 0;
+            const amount = qty * rate;
+            
+            row.querySelector(".amount").innerText = amount.toFixed(2);
+            subtotal += amount;
+        });
+
+        const shipping = parseFloat(document.getElementById("shipping").value) || 0;
+        const total = subtotal + shipping;
+        const sym = document.getElementById("currency-select").value;
+
+        document.getElementById("subtotal").innerHTML = `<span class="cur-sym">${sym}</span> ${subtotal.toFixed(2)}`;
+        document.getElementById("total").innerHTML = `<span class="cur-sym">${sym}</span> ${total.toFixed(2)}`;
+    }
+
+    function updateCurrency() { calculateTotals(); }
+
+    function generatePDF() {
+        const wasChecked = document.getElementById('same-as-billing').checked;
+        if (wasChecked) {
+            ['ship-name', 'ship-street', 'ship-state'].forEach(id => {
+                document.getElementById(id).disabled = false;
+            });
+        }
+
+        window.print();
+
+        if (wasChecked) syncAddresses();
+
+        let currentInvStr = document.getElementById('invoice-number').value;
+        if(currentInvStr.startsWith('INV-')) {
+            let num = parseInt(currentInvStr.replace('INV-', ''), 10);
+            if(!isNaN(num)) { localStorage.setItem('elara_invoice_seq', num + 1); }
+        }
+    }
+</script>
+
+</body>
+</html>
