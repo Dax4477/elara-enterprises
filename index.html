@@ -15,6 +15,7 @@
             --bg-card: #ffffff;
             --border: #e5e7eb;
             --focus-ring: rgba(5, 150, 105, 0.2);
+            --danger: #ef4444;
         }
 
         body { 
@@ -26,7 +27,7 @@
         }
 
         .invoice-container { 
-            max-width: 900px; 
+            max-width: 950px; /* Widened slightly to fit MRP */
             margin: auto; 
             background: var(--bg-card); 
             padding: 50px; 
@@ -61,7 +62,6 @@
         .toggle-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: #f9fafb; padding: 10px 15px; border-radius: 8px; border: 1px solid var(--border); }
         .toggle-container h3 { margin: 0; font-size: 15px; color: var(--text-main); }
         .switch-wrapper { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; color: var(--text-muted); }
-        
         .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: .3s; border-radius: 24px; }
@@ -70,17 +70,22 @@
         input:checked + .slider:before { transform: translateX(20px); }
         .active-label { color: var(--primary); }
 
-        /* Table */
-        table { width: 100%; border-collapse: separate; border-spacing: 0; margin-bottom: 20px; }
+        /* Table & Responsive Wrapper */
+        .table-responsive { width: 100%; overflow-x: auto; margin-bottom: 20px; }
+        table { width: 100%; min-width: 700px; border-collapse: separate; border-spacing: 0; } /* Increased min-width for MRP */
         th { background-color: #f9fafb; color: var(--text-muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; padding: 12px; text-align: left; border-top: 1px solid var(--border); border-bottom: 2px solid var(--border); }
         td { padding: 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
         td input, td select { margin-bottom: 0; border: 1px solid transparent; background: transparent; }
         td input:focus, td select:focus { background: #fff; border: 1px solid var(--primary); }
         
-        /* New SL.NO Column Styles */
         .sl-col { width: 40px; text-align: center !important; }
         .sl-no { font-weight: 600; color: var(--text-muted); }
         .amount { font-weight: 500; color: var(--text-main); }
+        
+        /* Delete Row Button */
+        .del-col { width: 30px; text-align: center; }
+        .del-btn { background: none; border: none; color: #fca5a5; cursor: pointer; font-size: 16px; padding: 4px; border-radius: 4px; transition: 0.2s; }
+        .del-btn:hover { color: var(--danger); background: #fee2e2; }
 
         /* Buttons */
         .add-row-btn { background-color: #f3f4f6; color: var(--text-main); border: 1px solid var(--border); padding: 8px 16px; cursor: pointer; font-size: 13px; font-weight: 500; border-radius: 6px; transition: background 0.2s; }
@@ -97,12 +102,25 @@
         .btn-print { background-color: var(--primary); color: white; border: none; padding: 14px 28px; cursor: pointer; font-size: 16px; font-weight: 600; border-radius: 8px; display: block; width: 100%; margin-top: 40px; text-align: center; transition: background 0.2s; box-shadow: 0 4px 6px rgba(5, 150, 105, 0.2); }
         .btn-print:hover { background-color: var(--primary-hover); }
         
+        /* MOBILE RESPONSIVE STYLES */
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .invoice-container { padding: 20px; }
+            .header { flex-direction: column; gap: 20px; }
+            .header-right { text-align: left; width: 100%; }
+            .meta-row { justify-content: flex-start; }
+            .address-container { grid-template-columns: 1fr; gap: 20px; }
+            .toggle-container { flex-direction: column; align-items: flex-start; gap: 10px; }
+            .totals-wrapper { justify-content: center; }
+            .totals-container { width: 100%; padding: 15px; }
+        }
+
         /* PRINT STYLES */
         @media print {
             @page { margin: 0; } 
             body { background: #fff; padding: 15mm; }
             .invoice-container { box-shadow: none; padding: 0; max-width: 100%; border: none; }
-            .btn-print, .add-row-btn, .checkbox-wrapper, .toggle-container { display: none; }
+            .btn-print, .add-row-btn, .checkbox-wrapper, .toggle-container, .del-col, .del-btn { display: none; }
             .address-box, .totals-container { background: transparent; border: none; padding: 0; }
             .address-box { margin-bottom: 20px; }
             .totals-wrapper { margin-top: 20px; }
@@ -182,33 +200,41 @@
         </div>
     </div>
 
-    <table id="invoice-table">
-        <thead>
-            <tr>
-                <th class="sl-col">SL.NO</th>
-                <th>Item Description</th>
-                <th style="width: 110px; text-align: center;">Type</th>
-                <th style="width: 80px; text-align: center;">Qty</th>
-                <th style="width: 120px; text-align: right;">Rate (₹)</th>
-                <th style="width: 120px; text-align: right;">Amount</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td class="sl-col sl-no">1</td>
-                <td><input type="text" placeholder="e.g., Premium Cardamom 5g"></td>
-                <td>
-                    <select class="item-type" style="text-align: center; font-weight: 600;">
-                        <option value="Unit">Unit/Pcs</option>
-                        <option value="Board">Board</option>
-                    </select>
-                </td>
-                <td><input type="number" class="qty" value="1" min="1" onchange="calculateTotals()" style="text-align: center;"></td>
-                <td><input type="number" class="rate" value="0.00" min="0" onchange="calculateTotals()" style="text-align: right;"></td>
-                <td class="amount" style="text-align: right;">0.00</td>
-            </tr>
-        </tbody>
-    </table>
+    <div class="table-responsive">
+        <table id="invoice-table">
+            <thead>
+                <tr>
+                    <th class="sl-col">SL</th>
+                    <th style="width: 90px; text-align: center;">MRP</th>
+                    <th>Item Description</th>
+                    <th style="width: 110px; text-align: center;">Type</th>
+                    <th style="width: 80px; text-align: center;">Qty</th>
+                    <th style="width: 120px; text-align: right;">Rate (₹)</th>
+                    <th style="width: 120px; text-align: right;">Amount</th>
+                    <th class="del-col"></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="sl-col sl-no">1</td>
+                    <td><input type="number" placeholder="0.00" style="text-align: center;"></td>
+                    <td><input type="text" placeholder="e.g., Premium Cardamom 5g"></td>
+                    <td>
+                        <select class="item-type" style="text-align: center; font-weight: 600;">
+                            <option value="Unit">Unit/Pcs</option>
+                            <option value="Board">Board</option>
+                        </select>
+                    </td>
+                    <td><input type="number" class="qty" value="1" min="1" onchange="calculateTotals()" style="text-align: center;"></td>
+                    <td><input type="number" class="rate" value="0.00" min="0" onchange="calculateTotals()" style="text-align: right;"></td>
+                    <td class="amount" style="text-align: right;">0.00</td>
+                    <td class="del-col">
+                        <button class="del-btn" onclick="removeRow(this)" title="Remove Item">✖</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
     <button class="add-row-btn" onclick="addRow()">+ Add Another Item</button>
 
     <div class="totals-wrapper">
@@ -271,10 +297,8 @@
 
     function updateMasterToggle() {
         const isBoard = document.getElementById('master-toggle').checked;
-        
         document.getElementById('label-board').className = isBoard ? 'active-label' : '';
         document.getElementById('label-unit').className = isBoard ? '' : 'active-label';
-
         const rows = document.querySelectorAll("#invoice-table tbody tr");
         rows.forEach(row => {
             const rate = parseFloat(row.querySelector(".rate").value) || 0;
@@ -284,7 +308,6 @@
         });
     }
 
-    // Update the serial numbers dynamically
     function updateSerialNumbers() {
         const rows = document.querySelectorAll("#invoice-table tbody tr");
         rows.forEach((row, index) => {
@@ -294,7 +317,6 @@
 
     function addRow() {
         const isBoard = document.getElementById('master-toggle').checked;
-        const defaultType = isBoard ? "Board" : "Unit";
         const htmlOptions = isBoard 
             ? `<option value="Unit">Unit/Pcs</option><option value="Board" selected>Board</option>`
             : `<option value="Unit" selected>Unit/Pcs</option><option value="Board">Board</option>`;
@@ -303,6 +325,7 @@
         const newRow = table.insertRow();
         newRow.innerHTML = `
             <td class="sl-col sl-no"></td>
+            <td><input type="number" placeholder="0.00" style="text-align: center;"></td>
             <td><input type="text" placeholder="Item description"></td>
             <td>
                 <select class="item-type" style="text-align: center; font-weight: 600;">
@@ -312,10 +335,22 @@
             <td><input type="number" class="qty" value="1" min="1" onchange="calculateTotals()" style="text-align: center;"></td>
             <td><input type="number" class="rate" value="0.00" min="0" onchange="calculateTotals()" style="text-align: right;"></td>
             <td class="amount" style="text-align: right;">0.00</td>
+            <td class="del-col">
+                <button class="del-btn" onclick="removeRow(this)" title="Remove Item">✖</button>
+            </td>
         `;
-        
-        // Refresh the serial numbers after adding a new row
         updateSerialNumbers();
+    }
+
+    function removeRow(btn) {
+        const row = btn.closest('tr');
+        if (document.querySelectorAll("#invoice-table tbody tr").length > 1) {
+            row.remove();
+            updateSerialNumbers();
+            calculateTotals();
+        } else {
+            alert("You must have at least one item on the invoice.");
+        }
     }
 
     function calculateTotals() {
@@ -326,7 +361,6 @@
             const qty = parseFloat(row.querySelector(".qty").value) || 0;
             const rate = parseFloat(row.querySelector(".rate").value) || 0;
             const amount = qty * rate;
-            
             row.querySelector(".amount").innerText = amount.toFixed(2);
             subtotal += amount;
         });
@@ -348,11 +382,8 @@
                 document.getElementById(id).disabled = false;
             });
         }
-
         window.print();
-
         if (wasChecked) syncAddresses();
-
         let currentInvStr = document.getElementById('invoice-number').value;
         if(currentInvStr.startsWith('INV-')) {
             let num = parseInt(currentInvStr.replace('INV-', ''), 10);
