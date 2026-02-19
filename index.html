@@ -6,7 +6,6 @@
     <title>ELARA Enterprises - Premium Invoice</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* 1. THE FIX: Global Box Sizing Reset */
         * { box-sizing: border-box; }
 
         :root {
@@ -82,16 +81,14 @@
         td input, td select { margin-bottom: 0; border: 1px solid transparent; background: transparent; padding: 4px; }
         td input:focus, td select:focus { background: #fff; border: 1px solid var(--primary); }
         
-        /* 2. THE FIX: Add padding to the last column */
-        th:last-child, td:last-child {
-            padding-right: 20px !important; /* Pulls text away from the right edge */
-        }
+        /* Padding Fix from previous step */
+        th:last-child, td:last-child { padding-right: 20px !important; }
 
         .sl-col { width: 35px; text-align: center !important; }
         .mrp-col { width: 80px; }
         .qty-col { width: 70px; }
         .rate-col { width: 100px; }
-        .amt-col { width: 110px; }
+        .amt-col { width: 110px; } /* Matches Total Width */
         .del-col { width: 30px; text-align: center; }
 
         .sl-no { font-weight: 600; color: var(--text-muted); font-size: 13px; }
@@ -99,13 +96,39 @@
         .del-btn { background: none; border: none; color: #fca5a5; cursor: pointer; font-size: 16px; padding: 0 5px; }
         .del-btn:hover { color: var(--danger); }
 
-        /* Totals */
+        /* TOTALS - ABSOLUTE RIGHT ALIGNMENT */
         .totals-wrapper { display: flex; justify-content: flex-end; margin-top: 20px; }
-        .totals-container { width: 320px; background: #f9fafb; padding: 20px; border-radius: 8px; border: 1px solid var(--border); }
-        .totals-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 13px; color: var(--text-muted); }
+        
+        /* Removed background/border for cleaner "Absolute Right" look */
+        .totals-container { width: auto; padding: 0 20px 0 0; } 
+        
+        .totals-row { 
+            display: flex; 
+            justify-content: flex-end; /* Packs everything to the right */
+            align-items: center; 
+            margin-bottom: 10px; 
+            font-size: 13px; 
+            color: var(--text-muted); 
+            gap: 20px; /* Space between Label and Value */
+        }
+        
         .totals-row span:last-child { font-weight: 600; color: var(--text-main); }
-        .totals-row input, .totals-row select { width: 100px; margin: 0; text-align: right; padding: 4px 8px; }
-        .total-final { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-top: 10px; border-top: 2px solid var(--border); font-size: 18px; font-weight: 700; color: var(--primary); }
+        
+        /* Input width matches Table Amount Column (110px) */
+        .totals-row input, .totals-row select { width: 110px; margin: 0; text-align: right; padding: 4px 8px; }
+        
+        .total-final { 
+            display: flex; 
+            justify-content: flex-end; /* Right align */
+            align-items: center; 
+            margin-top: 10px; 
+            padding-top: 10px; 
+            border-top: 2px solid var(--border); 
+            font-size: 18px; 
+            font-weight: 700; 
+            color: var(--primary); 
+            gap: 20px;
+        }
 
         .btn-print { background-color: var(--primary); color: white; border: none; padding: 12px 24px; cursor: pointer; font-size: 16px; font-weight: 600; border-radius: 8px; display: block; width: 100%; margin-top: 30px; text-align: center; transition: background 0.2s; }
         .btn-print:hover { background-color: var(--primary-hover); }
@@ -121,46 +144,26 @@
             .toggle-container { flex-direction: column; align-items: flex-start; gap: 10px; }
             .table-responsive { overflow-x: auto; }
             table { min-width: 700px; } 
-            .totals-wrapper { justify-content: center; }
-            .totals-container { width: 100%; padding: 15px; }
+            
+            /* On mobile, keep totals right aligned but allow container to fit */
+            .totals-wrapper { justify-content: flex-end; }
+            .totals-container { width: 100%; padding: 15px 0; }
         }
 
         /* PRINT STYLES */
         @media print {
             @page { margin: 5mm; size: auto; } 
             
-            body { 
-                background: #fff; 
-                padding: 0; 
-                -webkit-print-color-adjust: exact; 
-            }
+            body { background: #fff; padding: 0; -webkit-print-color-adjust: exact; }
             
-            .invoice-container { 
-                box-shadow: none; 
-                padding: 10px; 
-                max-width: 100% !important; 
-                width: 100%;
-                border: none; 
-                margin: 0; 
-            }
+            .invoice-container { box-shadow: none; padding: 10px; max-width: 100% !important; width: 100%; border: none; margin: 0; }
 
-            /* FORCE SIDE-BY-SIDE ADDRESSES */
-            .address-container { 
-                display: grid !important; 
-                grid-template-columns: 1fr 1fr !important; 
-                gap: 20px !important; 
-                margin-bottom: 20px;
-            }
-
-            .address-box {
-                background: transparent !important;
-                border: 1px solid #ddd !important;
-                padding: 10px !important;
-            }
+            .address-container { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 20px !important; margin-bottom: 20px; }
+            .address-box { background: transparent !important; border: 1px solid #ddd !important; padding: 10px !important; }
 
             .header { margin-bottom: 20px; }
-            .totals-container { background: transparent !important; border: none !important; padding: 0 !important; width: 40% !important; }
-            .totals-wrapper { margin-top: 10px; }
+            .totals-wrapper { margin-top: 10px; justify-content: flex-end !important; }
+            .totals-container { padding-right: 20px !important; }
 
             .btn-print, .add-row-btn, .checkbox-wrapper, .toggle-container, .del-col, .del-btn { display: none !important; }
             
@@ -169,9 +172,7 @@
             input::placeholder { color: transparent; }
             td { border-bottom: 1px solid #ccc !important; padding: 6px !important; }
             
-            /* 3. THE FIX: Ensure padding exists on print too */
             th:last-child, td:last-child { padding-right: 20px !important; }
-
             .table-responsive { overflow: visible !important; }
         }
     </style>
